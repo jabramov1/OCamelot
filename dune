@@ -1,4 +1,0 @@
-; Add Libraries Parameter 
-
-(executable
- (name main))
