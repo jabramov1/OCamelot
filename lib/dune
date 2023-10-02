@@ -1,0 +1,4 @@
+(library
+ (name ocamelot)
+ (public_name OCamelot)
+ (libraries csv))
