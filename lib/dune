@@ -1,4 +1,8 @@
 (library
  (name ocamelot)
  (public_name OCamelot)
+<<<<<<< HEAD
  (libraries csv))
+=======
+ (libraries csv, owl))
+>>>>>>> c00d7c54b9174222450b8dd470d77f802d9d77ca
