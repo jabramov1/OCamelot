@@ -1,12 +1,4 @@
 (library
  (name ocamelot)
  (public_name OCamelot)
-<<<<<<< HEAD
  (libraries csv gnuplot))
-=======
-<<<<<<< HEAD
- (libraries csv))
-=======
- (libraries csv, owl))
->>>>>>> c00d7c54b9174222450b8dd470d77f802d9d77ca
->>>>>>> 6aa2abc62ed7d76ce82f5be44c2fd0ef3f1e5a62
