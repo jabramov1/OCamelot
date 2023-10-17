@@ -1,4 +1,8 @@
+(executable
+ (name random_test)
+ (libraries csv gnuplot base))
+
 (library
  (name ocamelot)
  (public_name OCamelot)
- (libraries csv gnuplot))
+ (libraries csv gnuplot base))
