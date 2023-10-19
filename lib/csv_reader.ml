@@ -1,5 +1,8 @@
 open Csv
 
+(* TODO: get column by title name *)
+(* TODO: ignore header option *)
+
 module type CsvReaderType = sig
   val read_csv : string -> string list list
   (** Read a csv file with file name [filename] and converts it to a 2D-array of
@@ -20,6 +23,8 @@ end
 (** This module contains functions for reading CSV files and working with their
     data. *)
 module CsvReader : CsvReaderType = struct
+  (* type t = { timestamp : float; price : float; } *)
+
   let read_csv (filename : string) : string list list =
     load ~separator:',' filename
 
@@ -48,7 +53,4 @@ module CsvReader : CsvReaderType = struct
     | row :: rest -> get row n :: get_col rest n
 
   let get_row (csv : string list list) (n : int) : string list = get csv n
-
-  (* TODO: get column by title name *)
-  (* TODO: ignore header option *)
 end
