@@ -139,3 +139,137 @@ module CsvReader : CsvReaderType = struct
   (* TODO: ignore header option *)
 end
 
+
+
+
+
+
+
+(* let add_to_map (header : string) (value : string) *)
+(* let csv_to_map (filename : string) = let channel = open_in filename in let
+   headers = ref [] in let data_map = ref (CsvMap.empty) in
+
+   let *)
+
+(* let print_csv csv = List.iter (fun row -> let row_str = String.concat ", "
+   row in Printf.printf "[%s]\n" row_str) csv *)
+
+(* let get_header (csv : csv) : string array = match csv.row_based with | [||]
+   -> [||] | arr -> arr.(0) *)
+
+(* let key_indices (header : string list) (date : string) (open_price : string)
+   (high_price : string) (low_price : string) (close_price : string) (adj_price
+   : string) (volume : string) : int list = let keys = [ date; open_price;
+   high_price; low_price; close_price; adj_price; volume; ] in let rec
+   key_indices_helper idx acc header = match header with | [] -> List.rev acc |
+   h :: t -> if List.mem h keys then key_indices_helper (idx + 1) (idx :: acc) t
+   else key_indices_helper (idx + 1) acc t in key_indices_helper 0 [] header
+
+   let gen_price_bar (key_indices : int list) (row : string list) : price_bar =
+   let date = List.nth row (List.nth key_indices 0) in let open_price = List.nth
+   row (List.nth key_indices 1) in let high_price = List.nth row (List.nth
+   key_indices 2) in let low_price = List.nth row (List.nth key_indices 3) in
+   let close_price = List.nth row (List.nth key_indices 4) in let adj_price =
+   List.nth row (List.nth key_indices 5) in let volume = List.nth row (List.nth
+   key_indices 6) in { date; open_price = float_of_string open_price; high_price
+   = float_of_string high_price; low_price = float_of_string low_price;
+   close_price = float_of_string close_price; adj_price = float_of_string
+   adj_price; volume = int_of_string volume; }
+
+   let csv_row_based (path : string) (date : string) (open_price : string)
+   (high_price : string) (low_price : string) (close_price : string) (adj_price
+   : string) (volume : string) : price_bar array = let csv = load ~separator:','
+   path in let num_rows = List.length csv in if num_rows = 0 then [||] else let
+   num_cols = csv |> List.hd |> List.length in if num_cols = 0 then [||] else
+   let header = List.hd csv in let key_indices = key_indices header date
+   open_price high_price low_price close_price adj_price volume in let result =
+   Array.make num_rows { date = ""; open_price = 2.0; high_price = 2.0;
+   low_price = 2.0; close_price = 2.3; adj_price = 2.1; volume = 2; } in for i =
+   1 to num_rows - 1 do result.(i) <- gen_price_bar key_indices (List.nth csv i)
+   done; result
+
+   (* let transpose (csv : string array array) : string array array = let
+   num_rows = Array.length csv in if num_rows = 0 then [||] else let num_cols =
+   Array.length csv.(0) in if num_cols = 0 then [||] else let trans_arr =
+   Array.make_matrix num_cols num_rows csv.(0).(0) in
+
+   for i = 0 to num_rows - 1 do for j = 0 to num_cols - 1 do trans_arr.(j).(i)
+   <- csv.(i).(j) done done;
+
+   trans_arr
+
+   let key_indices (keys : string list) (header : string list): int list = let
+   rec key_indices_helper acc idx = function | [] -> List.rev acc | h :: t -> if
+   List.mem h keys then key_indices_helper (idx :: acc) (idx + 1) t else
+   key_indices_helper acc (idx + 1) t in key_indices_helper [] 0 header *)
+
+   (* let row_price_bar (key_indices: int list) (row : string list) : price_bar
+   = let rec row_price_bar_helper = function | [] -> [] | _ :: t -> List.nth row
+   :: row_price_bar_helper t in let List.rev (row_price_bar_helper key_indices)
+
+   match row with | date :: open_price :: high_price :: low_price :: close_price
+   :: adj_price :: volume :: [] -> { date = date; open_price = open_price;
+   high_price = high_price; low_price = float_of_string low_price; close_price =
+   float_of_string close_price; adj_price = float_of_string adj_price; volume =
+   int_of_string volume; } | _ -> failwith "Invalid input" *) (* let
+   arr_price_bar = assert true *)
+
+   let read_csv (path : string) ~date ~open_price ~high_price ~low_price
+   ~close_price ~adj_price ~volume = let csv_row = csv_row_based path date
+   open_price high_price low_price close_price adj_price volume in csv_row *)
+(* in let num_rows = Array.length csv_row in if num_rows = 0 then { row_based =
+   [||]; col_based = CsvMap.empty } else let csv_col = transpose csv_row_based
+   in let num_cols = Array.length csv_col.(0) in if num_cols = 0 then {
+   row_based = [||]; col_based = CsvMap.empty } else let col_map = ref
+   CsvMap.empty in for i = 1 to num_rows - 1 do let key = csv_col.(i).(0) in let
+   value = Array.sub csv_col.(i) 1 (num_cols - 1) in col_map := CsvMap.add key
+   value !col_map done; { row_based = csv_row; col_based = !col_map } *)
+
+(* let print_csv (csv : csv) = Array.iter (fun row -> print_endline "";
+   Array.iter (fun s -> print_string (s ^ ", ")) row) csv.row_based *)
+
+(* let print_map map = CsvMap.iter (fun key arr -> Printf.printf "Key: %s,\n\n
+   Values: [" key; Array.iter (fun value -> Printf.printf "%s; " value) arr;
+   Printf.printf "]\n") map *)
+
+(* let gen_keys = [ date; open_price; high_price; low_price; close_price;
+   adj_price; volume ]
+
+   let get_key_cols (keys : string list) (csv : csv): int list = let header =
+   get_header csv in *)
+
+(* let gen_price_bars (key_cols : int list) (csv : csv) : price_bar list =
+   ase *)
+
+(* type price_bar = { date : string; open_price : string; high_price : string;
+   low_price : float; close_price : float; adj_price : float; volume : int; } *)
+
+(* let rec get (lst : 'a list) (n : int) : 'a = match (lst, n) with | [], _ ->
+   failwith "Index out of bounds" | h :: _, 0 -> h | _ :: t, n -> get t (n -
+   1) *)
+
+(* let get_elem (csv : string list list) (i : int) (j : int) : string = let row
+   = get csv i in get row j *)
+(* let no_header (csv : string list list) : string list list = match csv with |
+   [] -> [] | _ :: t -> t
+
+   let rec get_col ?(header = false) (csv : string list list) (n : int) : string
+   list = let csv = if header then csv else no_header csv in match csv with | []
+   -> [] | row :: rest -> get row n :: get_col rest n *)
+
+(* open Map *)
+
+(* let gen_price_bar (row : string list) : price_bar = match row with | date ::
+   open_price :: high_price :: low_price :: close_price :: adj_price :: volume
+   :: _ -> { date; open_price; high_price; low_price = float_of_string
+   low_price; close_price = float_of_string close_price; adj_price =
+   float_of_string adj_price; volume = int_of_string volume; } | _ -> failwith
+   "Invalid input list." *)
+
+(* let () = let csv = read_csv ".> data/test.csv" in let row = get_row csv 1 in
+   let bar = gen_price_bar row in print_endline bar.date; print_endline
+   bar.open_price; print_endline bar.high_price; print_float bar.low_price;
+   print_endline ""; print_float bar.close_price; print_endline ""; print_float
+   bar.adj_price; print_endline ""; print_int bar.volume; print_endline "" *)
+
+
