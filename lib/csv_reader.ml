@@ -139,7 +139,7 @@ module CsvReader : CsvReaderType = struct
 end
 
 let () =
-  let filename = "../data/test.csv" in
+  let filename = "data/test.csv" in
   let csv =
     CsvReader.read_csv filename ~date:"Date" ~open_price:"Open"
       ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
