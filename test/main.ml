@@ -1,6 +1,4 @@
-open Gnuplot
 open Ocamelot.Csv_reader
-open Ptime
 module Gp = Gnuplot
 
 (* Convert a date string in the format "YYYY-MM-DD" to a UNIX timestamp *)
@@ -11,7 +9,7 @@ let date_to_unix_timestamp date_str =
 
 let () =
   (* Read data using CsvReader *)
-  let filename = "SPY.csv" in
+  let filename = "../data/SPY.csv" in
   let csv_data =
     CsvReader.read_csv filename ~date:"Date" ~open_price:"Open"
       ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
