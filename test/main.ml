@@ -1,6 +1,7 @@
 open Gnuplot
-open OCamelot.Csv_reader
+open Ocamelot.Csv_reader
 open Ptime
+module Gp = Gnuplot
 
 (* Convert a date string in the format "YYYY-MM-DD" to a UNIX timestamp *)
 let date_to_unix_timestamp date_str =
@@ -19,11 +20,21 @@ let () =
 
   (* Convert CsvReader data to the format used by Gnuplot *)
   let convert_data row =
-    let date = date_to_unix_timestamp row.CsvReader.date in
-    let op = float_of_string row.CsvReader.open_price in
-    let hi = float_of_string row.CsvReader.high_price in
-    let lo = float_of_string row.CsvReader.low_price in
-    let cl = float_of_string row.CsvReader.close_price in
+    (* Helper function to get the first item of a list *)
+    let hd lst =
+      match lst with
+      | [] -> failwith "Expected non-empty list"
+      | h :: _ -> h
+    in
+
+    (* Use the helper function to get the first item from the list returned by
+       each getter *)
+    let date = date_to_unix_timestamp (hd (CsvReader.get_dates [ row ])) in
+    let op = float_of_string (hd (CsvReader.get_open_prices [ row ])) in
+    let hi = float_of_string (hd (CsvReader.get_high_prices [ row ])) in
+    let lo = float_of_string (hd (CsvReader.get_low_prices [ row ])) in
+    let cl = float_of_string (hd (CsvReader.get_closing_prices [ row ])) in
+
     (date, (op, hi, lo, cl))
   in
 
