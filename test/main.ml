@@ -1,17 +1,16 @@
-open Gnuplot
 open Ocamelot.Csv_reader
-open Ptime
 module Gp = Gnuplot
 
 (* Convert a date string in the format "YYYY-MM-DD" to a UNIX timestamp *)
 let date_to_unix_timestamp date_str =
-  match Ptime.of_rfc3339 date_str with
+  let date = date_str ^ "T00:00:00Z" in
+  match Ptime.of_rfc3339 date with
   | Ok (time, _, _) -> Ptime.to_float_s time
-  | Error _ -> failwith ("Invalid date: " ^ date_str)
+  | Error _ -> failwith ("Invalid date: " ^ date)
 
 let () =
   (* Read data using CsvReader *)
-  let filename = "path_to_your_data.csv" in
+  let filename = "../data/SPY.csv" in
   let csv_data =
     CsvReader.read_csv filename ~date:"Date" ~open_price:"Open"
       ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
@@ -37,7 +36,6 @@ let () =
 
     (date, (op, hi, lo, cl))
   in
-
   let plot_data = List.map convert_data csv_data in
   let dates = List.map fst plot_data in
   let start = List.hd dates in
@@ -51,5 +49,5 @@ let () =
     ~format:"%b %d'%y"
     (Gp.Series.candles_date_ohlc plot_data);
 
-  Unix.sleep 10;
+  Unix.sleep 10000;
   Gp.close gp
