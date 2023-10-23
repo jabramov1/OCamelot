@@ -13,6 +13,13 @@ module type CsvReaderType = sig
     t list
 
   val get_row : int -> t list -> t
+  val get_date : t -> string
+  val get_open_price : t -> string
+  val get_high_price : t -> string
+  val get_low_price : t -> string
+  val get_closing_price : t -> string
+  val get_adj_price : t -> string
+  val get_volume_price : t -> string
   val get_dates : t list -> string list
   val get_open_prices : t list -> string list
   val get_high_prices : t list -> string list
@@ -41,6 +48,13 @@ module CsvReader : CsvReaderType = struct
   }
 
   let get_row i data : t = List.nth data i
+  let get_date pb = pb.date
+  let get_open_price pb = pb.open_price
+  let get_high_price pb = pb.high_price
+  let get_low_price pb = pb.low_price
+  let get_closing_price pb = pb.close_price
+  let get_adj_price pb = pb.adj_price
+  let get_volume_price pb = pb.volume
   let get_dates data = List.map (fun pb -> pb.date) data
   let get_open_prices data = List.map (fun pb -> pb.open_price) data
   let get_high_prices data = List.map (fun pb -> pb.high_price) data
