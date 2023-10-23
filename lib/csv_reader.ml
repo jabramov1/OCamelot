@@ -1,5 +1,3 @@
-(** TODO: implement head, tail, index_of, print functions*)
-
 module type CsvReaderType = sig
   type t
 
@@ -15,6 +13,13 @@ module type CsvReaderType = sig
     t list
 
   val get_row : int -> t list -> t
+  val get_date : t -> string
+  val get_open_price : t -> string
+  val get_high_price : t -> string
+  val get_low_price : t -> string
+  val get_closing_price : t -> string
+  val get_adj_price : t -> string
+  val get_volume_price : t -> string
   val get_dates : t list -> string list
   val get_open_prices : t list -> string list
   val get_high_prices : t list -> string list
@@ -22,16 +27,10 @@ module type CsvReaderType = sig
   val get_closing_prices : t list -> string list
   val get_adj_prices : t list -> string list
   val get_volume_prices : t list -> string list
-  val index_of_pb : unit
 
-  (* val index_of : t -> int *)
-  val head : unit
-
-  (* val head : ?n:int -> t list *)
-  val tail : unit
-
-  (* val tail : ?n:int -> t list *)
-
+  (* Make optional*)
+  val head : t list -> int -> t list
+  val tail : t list -> int -> t list
   val print_data : t list -> unit
   val print_row : t -> unit
   val print_string_list : string list -> unit
@@ -49,6 +48,13 @@ module CsvReader : CsvReaderType = struct
   }
 
   let get_row i data : t = List.nth data i
+  let get_date pb = pb.date
+  let get_open_price pb = pb.open_price
+  let get_high_price pb = pb.high_price
+  let get_low_price pb = pb.low_price
+  let get_closing_price pb = pb.close_price
+  let get_adj_price pb = pb.adj_price
+  let get_volume_price pb = pb.volume
   let get_dates data = List.map (fun pb -> pb.date) data
   let get_open_prices data = List.map (fun pb -> pb.open_price) data
   let get_high_prices data = List.map (fun pb -> pb.high_price) data
@@ -100,9 +106,16 @@ module CsvReader : CsvReaderType = struct
     in
     List.map extract_row filtered_rows
 
-  let index_of_pb = failwith "Unimplemented"
-  let head = failwith "Unimplemented"
-  let tail = failwith "Unimplemented"
+  let head data n =
+    let rec head_helper acc rest n =
+      match (rest, n) with
+      | _, 0 | [], _ -> List.rev acc
+      | h :: t, n when n > 0 -> head_helper (h :: acc) t (n - 1)
+      | _ -> invalid_arg "n must be a non-negative integer"
+    in
+    head_helper [ List.hd data ] (List.tl data) n
+
+  let tail data n = head (List.rev data) n
 
   let print_string_list (data : string list) =
     print_endline (String.concat ", " data)
@@ -143,7 +156,6 @@ let () =
   let volume_prices = CsvReader.get_volume_prices csv in
 
   CsvReader.print_row first_row;
-
   CsvReader.print_string_list dates;
   CsvReader.print_string_list open_prices;
   CsvReader.print_string_list high_prices;
@@ -152,4 +164,8 @@ let () =
   CsvReader.print_string_list adj_prices;
   CsvReader.print_string_list volume_prices;
 
-  CsvReader.print_data csv
+  CsvReader.print_data csv;
+  let first_5_rows = CsvReader.head csv 5 in
+  let last_5_rows = CsvReader.tail csv 5 in
+  CsvReader.print_data first_5_rows;
+  CsvReader.print_data last_5_rows
