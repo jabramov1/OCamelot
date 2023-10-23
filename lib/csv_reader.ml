@@ -1,21 +1,44 @@
-(* module type CsvReaderType = sig type t
+(** TODO: implement head, tail, index_of, print functions*)
 
-   val read_csv : unit val get_row : unit val get_col : unit val head : unit val
-   tail : unit val print_csv : unit val print_row : unit val print_col : unit
-   end *)
+module type CsvReaderType = sig
+  type t
 
-module CsvReader = struct
-  type col = {
-    date : string list;
-    open_price : string list;
-    high_price : string list;
-    low_price : string list;
-    close_price : string list;
-    adj_price : string list;
-    volume : string list;
-  }
+  val read_csv :
+    string ->
+    date:string ->
+    open_price:string ->
+    high_price:string ->
+    low_price:string ->
+    close_price:string ->
+    adj_price:string ->
+    volume:string ->
+    t list
 
-  type row = {
+  val get_row : int -> t list -> t
+  val get_dates : t list -> string list
+  val get_open_prices : t list -> string list
+  val get_high_prices : t list -> string list
+  val get_low_prices : t list -> string list
+  val get_closing_prices : t list -> string list
+  val get_adj_prices : t list -> string list
+  val get_volume_prices : t list -> string list
+  val index_of_pb : unit
+
+  (* val index_of : t -> int *)
+  val head : unit
+
+  (* val head : ?n:int -> t list *)
+  val tail : unit
+
+  (* val tail : ?n:int -> t list *)
+
+  val print_data : t list -> unit
+  val print_row : t -> unit
+  val print_string_list : string list -> unit
+end
+
+module CsvReader : CsvReaderType = struct
+  type t = {
     date : string;
     open_price : string;
     high_price : string;
@@ -25,10 +48,14 @@ module CsvReader = struct
     volume : string;
   }
 
-  type t = {
-    col_based : col;
-    row_based : row list;
-  }
+  let get_row i data : t = List.nth data i
+  let get_dates data = List.map (fun pb -> pb.date) data
+  let get_open_prices data = List.map (fun pb -> pb.open_price) data
+  let get_high_prices data = List.map (fun pb -> pb.high_price) data
+  let get_low_prices data = List.map (fun pb -> pb.low_price) data
+  let get_closing_prices data = List.map (fun pb -> pb.close_price) data
+  let get_adj_prices data = List.map (fun pb -> pb.adj_price) data
+  let get_volume_prices data = List.map (fun pb -> pb.volume) data
 
   let index_of (elem : string) (lst : string list) : int =
     let rec helper elem lst index =
@@ -48,16 +75,8 @@ module CsvReader = struct
         | index -> index)
       keys
 
-  let extract_column index rows =
-    List.map
-      (fun row ->
-        match List.nth_opt row index with
-        | Some value -> value
-        | None -> failwith (Printf.sprintf "Index out of bounds: %d" index))
-      rows
-
   let read_csv filename ~date ~open_price ~high_price ~low_price ~close_price
-      ~adj_price ~volume : t =
+      ~adj_price ~volume =
     let csv = Csv.load filename in
     let keys =
       [
@@ -79,37 +98,31 @@ module CsvReader = struct
         volume = List.nth row (List.nth selected_indices 6);
       }
     in
+    List.map extract_row filtered_rows
 
-    let row_based_data = List.map extract_row filtered_rows in
-
-    {
-      col_based =
-        {
-          date = extract_column (List.nth selected_indices 0) filtered_rows;
-          open_price =
-            extract_column (List.nth selected_indices 1) filtered_rows;
-          high_price =
-            extract_column (List.nth selected_indices 2) filtered_rows;
-          low_price = extract_column (List.nth selected_indices 3) filtered_rows;
-          close_price =
-            extract_column (List.nth selected_indices 4) filtered_rows;
-          adj_price = extract_column (List.nth selected_indices 5) filtered_rows;
-          volume = extract_column (List.nth selected_indices 6) filtered_rows;
-        };
-      row_based = row_based_data;
-    }
+  let index_of_pb = failwith "Unimplemented"
+  let head = failwith "Unimplemented"
+  let tail = failwith "Unimplemented"
 
   let print_string_list (data : string list) =
     print_endline (String.concat ", " data)
 
-  let print_row (row : row) =
+  let print_row row =
     Printf.printf
-      "Date: %s, Open Price: %s, High Price: %s, Low Price: %s, Close Price: \
-       %s, Adj Price: %s, Volume: %s\n"
+      "Date: %s, Open Price: %s, High\n\
+      \     Price: %s, Low Price: %s, Close Price:  %s, Adj Price: %s, Volume: \
+       %s\n"
       row.date row.open_price row.high_price row.low_price row.close_price
       row.adj_price row.volume
 
-  let print_row_list (rows : row list) = List.iter print_row rows
+  let print_data data =
+    print_endline
+      "Date, Open Price, High Price, Low Price, Close Price, Adj Price, Volume";
+    List.iter
+      (fun row ->
+        Printf.printf "%s, %s, %s, %s, %s, %s, %s\n" row.date row.open_price
+          row.high_price row.low_price row.close_price row.adj_price row.volume)
+      data
 end
 
 let () =
@@ -120,12 +133,23 @@ let () =
       ~adj_price:"Adj Close" ~volume:"Volume"
   in
 
-  CsvReader.print_row (List.hd csv.row_based);
-  CsvReader.print_row_list csv.row_based;
-  CsvReader.print_string_list csv.col_based.date;
-  CsvReader.print_string_list csv.col_based.open_price;
-  CsvReader.print_string_list csv.col_based.high_price;
-  CsvReader.print_string_list csv.col_based.low_price;
-  CsvReader.print_string_list csv.col_based.close_price;
-  CsvReader.print_string_list csv.col_based.adj_price;
-  CsvReader.print_string_list csv.col_based.volume
+  let first_row = CsvReader.get_row 0 csv in
+  let dates = CsvReader.get_dates csv in
+  let open_prices = CsvReader.get_open_prices csv in
+  let high_prices = CsvReader.get_high_prices csv in
+  let low_prices = CsvReader.get_low_prices csv in
+  let closing_prices = CsvReader.get_closing_prices csv in
+  let adj_prices = CsvReader.get_adj_prices csv in
+  let volume_prices = CsvReader.get_volume_prices csv in
+
+  CsvReader.print_row first_row;
+
+  CsvReader.print_string_list dates;
+  CsvReader.print_string_list open_prices;
+  CsvReader.print_string_list high_prices;
+  CsvReader.print_string_list low_prices;
+  CsvReader.print_string_list closing_prices;
+  CsvReader.print_string_list adj_prices;
+  CsvReader.print_string_list volume_prices;
+
+  CsvReader.print_data csv
