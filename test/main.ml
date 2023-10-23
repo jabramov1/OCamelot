@@ -11,7 +11,7 @@ let date_to_unix_timestamp date_str =
 
 let () =
   (* Read data using CsvReader *)
-  let filename = "path_to_your_data.csv" in
+  let filename = "SPY.csv" in
   let csv_data =
     CsvReader.read_csv filename ~date:"Date" ~open_price:"Open"
       ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
