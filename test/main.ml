@@ -1,53 +1,20 @@
-open Ocamelot.Csv_reader
-module Gp = Gnuplot
+(* open Ocamelot.CsvReader open OUnit2
 
-(* Convert a date string in the format "YYYY-MM-DD" to a UNIX timestamp *)
-let date_to_unix_timestamp date_str =
-  let date = date_str ^ "T00:00:00Z" in
-  match Ptime.of_rfc3339 date with
-  | Ok (time, _, _) -> Ptime.to_float_s time
-  | Error _ -> failwith ("Invalid date: " ^ date)
+   (** TODO: create more test csvs with different header orders, lack of header,
+   etc. *) let empty_csv = CsvReader.read_csv "../data/empty.csv"
 
-let () =
-  (* Read data using CsvReader *)
-  let filename = "data/SPY.csv" in
-  let csv_data =
-    CsvReader.read_csv filename ~date:"Date" ~open_price:"Open"
-      ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
-      ~adj_price:"Adj Close" ~volume:"Volume"
-  in
+   let test_csv_1 = CsvReader.read_csv "../data/test.csv"
 
-  (* Convert CsvReader data to the format used by Gnuplot *)
-  let convert_data row =
-    (* Helper function to get the first item of a list *)
-    let hd lst =
-      match lst with
-      | [] -> failwith "Expected non-empty list"
-      | h :: _ -> h
-    in
+   (** Can probably make this concise with higher order functions *) let
+   get_row_tests = []
 
-    (* Use the helper function to get the first item from the list returned by
-       each getter *)
-    let date = date_to_unix_timestamp (hd (CsvReader.get_dates [ row ])) in
-    let op = float_of_string (hd (CsvReader.get_open_prices [ row ])) in
-    let hi = float_of_string (hd (CsvReader.get_high_prices [ row ])) in
-    let lo = float_of_string (hd (CsvReader.get_low_prices [ row ])) in
-    let cl = float_of_string (hd (CsvReader.get_closing_prices [ row ])) in
-
-    (date, (op, hi, lo, cl))
-  in
-  let plot_data = List.map convert_data csv_data in
-  let dates = List.map fst plot_data in
-  let start = List.hd dates in
-  let stop = List.hd (List.rev dates) in
-
-  let gp = Gp.create () in
-
-  (* Plot the data *)
-  Gp.plot gp
-    ~range:(Gp.Date (start -. (3600. *. 24.), stop +. (3600. *. 24.)))
-    ~format:"%b %d'%y"
-    (Gp.Series.candles_date_ohlc plot_data);
-
-  Unix.sleep 10000;
-  Gp.close gp
+   let get_date_tests = [] let get_open_price_tests = [] let
+   get_high_price_tests = [] let get_low_price_tests = [] let
+   get_closing_price_tests = [] let get_adj_price_tests = [] let
+   get_volume_price_tests = [] let get_dates_tests = [] let
+   get_open_prices_tests = [] let get_high_prices_tests = [] let
+   get_low_prices_tests = [] let get_closing_prices_tests = [] let
+   get_adj_prices_tests = [] let get_volume_prices_tests = [] let head_tests =
+   [] let tail_tests = [] let print_data_tests = [] let print_row_tests = [] let
+   print_string_list_tests = [] let csv_tests = List.flatten [] let suite =
+   "main test suite" >::: List.flatten [] *)
