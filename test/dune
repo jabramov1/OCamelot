@@ -1,7 +1,7 @@
-; (test
-;  (name main)
-;  (libraries ounit2 gnuplot base ptime timedesc OCamelot))
-
-(executable
+(test
  (name main)
- (libraries ounit2 gnuplot base OCamelot ptime timedesc))
+ (libraries ounit2 gnuplot base ptime timedesc OCamelot))
+
+; (executable
+;  (name main)
+;  (libraries ounit2 gnuplot base OCamelot ptime timedesc))
