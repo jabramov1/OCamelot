@@ -1,8 +1,10 @@
+(** TODO: float_or_int + no header options *)
+
 module type CsvReaderType = sig
-  type elt
+  type row
   (** Representation type for each row in the CSV file. *)
 
-  type t = elt list
+  type t = row list
   (** Representation type for entire CSV data file. Each row has type [elt] and
       is ordered chronologically within a list. *)
 
@@ -14,12 +16,12 @@ module type CsvReaderType = sig
     close_price:string ->
     adj_price:string ->
     volume:string ->
-    ?separator:string ->
+    ?separator:char ->
     string ->
     t
   (** [read_csv] loads a CSV file into a format suitable for financial
-      calculations. An entry x is stored as [Some x], while empty entries are
-      stored as [None].
+      calculations. An entry x is stored as [Some x], while empty entries and
+      entries that don't conform to their required type are stored as [None].
 
       @raise Sys_error if the given file can't be found.
 
@@ -53,32 +55,32 @@ module type CsvReaderType = sig
   (** [size d] returns the number of rows stored in the CSV data representation
       [d]. *)
 
-  val get_row : t -> int -> elt
+  val get_row : t -> int -> row
   (** [get_row d n] returns the row in [d] located at index [n]. Indices begin
       at 0.
 
       @raise Not_found if index is out of bounds. *)
 
-  val get_date : elt -> string option
+  val get_date : row -> string option
   (** [get_date r] returns the date for the given row [r]. *)
 
-  val get_open_price : elt -> float option
+  val get_open_price : row -> float option
   (** [get_open_price r] returns the open price for the given row [r]. *)
 
-  val get_high_price : elt -> float option
+  val get_high_price : row -> float option
   (** [get_high_price r] returns the high price for the given row [r]. *)
 
-  val get_low_price : elt -> float option
+  val get_low_price : row -> float option
   (** [get_low_price r] returns the low price for the given row [r]. *)
 
-  val get_closing_price : elt -> float option
+  val get_closing_price : row -> float option
   (** [get_closing_price r] returns the closing price for the given row [r]. *)
 
-  val get_adj_price : elt -> float option
+  val get_adj_price : row -> float option
   (** [get_adj_price r] returns the adjusted price for the given row [r]. *)
 
-  val get_volume_price : elt -> int option
-  (** [get_date row] returns the date for the given [row]. *)
+  val get_volume : row -> int option
+  (** [get_volume row] returns the date for the given [row]. *)
 
   val get_dates : t -> string option list
   (** [get_dates d] returns the dates column in the CSV data representation [d]. *)
@@ -103,16 +105,16 @@ module type CsvReaderType = sig
   (** [get_adj_prices d] returns the adjusted prices column in the CSV data
       representation [d]. *)
 
-  val get_volume : t -> int option list
-  (** [get_volume_prices d] returns the volume column in the CSV data
-      representation [d]. *)
+  val get_volumes : t -> int option list
+  (** [get_volumes d] returns the volume column in the CSV data representation
+      [d]. *)
 
-  val head : t -> int -> elt list
+  val head : t -> int -> row list
   (** [head d n] returns the first [n] elements of the CSV data representation
       [d]. If [n <= 0] then return the empty list. If [n] is greater than the
       number of rows in [d], then return the entirety of [d]. *)
 
-  val tail : t -> int -> elt list
+  val tail : t -> int -> row list
   (** [tail d n] returns the last [n] elements of the CSV data representation
       [d]. If [n <= 0] then return the empty list. If [n] is greater than the
       number of rows in [d], then return the entirety of [d]. *)
@@ -120,6 +122,6 @@ module type CsvReaderType = sig
   val print_data : t -> unit
   (** [print_data d] prints the data [d] in the form ... *)
 
-  val print_row : elt -> unit
+  val print_row : row -> unit
   (** [print_row r] prints a given row [r] in*)
 end
