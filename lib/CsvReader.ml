@@ -49,6 +49,11 @@ module CsvReader : CsvReaderType = struct
 
   type t = row list
 
+  type row_field_type =
+    | String of string
+    | Int of int
+    | Float of float
+
   let size data = List.length data
 
   let get_row (data : t) i =
@@ -68,11 +73,6 @@ module CsvReader : CsvReaderType = struct
   let get_closing_prices data = List.map (fun row -> row.close_price) data
   let get_adj_prices data = List.map (fun row -> row.adj_price) data
   let get_volumes data = List.map (fun row -> row.volume) data
-
-  type row_field_type =
-    | String of string
-    | Int of int
-    | Float of float
 
   let index_of (elem : string) (lst : string list) : int =
     let rec helper elem lst index =
@@ -224,7 +224,7 @@ module Main = struct
   open CsvReader
 
   let main () =
-    let filename = "../data/test/clean.csv" in
+    let filename = "data/test/clean.csv" in
 
     let data =
       read_csv ~date:"Date" ~open_price:"Open" ~high_price:"High"

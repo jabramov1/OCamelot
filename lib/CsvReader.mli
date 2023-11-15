@@ -1,4 +1,6 @@
-(** TODO: float_or_int + no header options *)
+(** TODO: float_or_int + no header options + maybe index optional parameters *)
+
+(** TODO: date delimiter plus order in which dates occur *)
 
 module type CsvReaderType = sig
   type row
@@ -125,3 +127,6 @@ module type CsvReaderType = sig
   val print_row : row -> unit
   (** [print_row r] prints a given row [r] in*)
 end
+
+module CsvReader : CsvReaderType
+(** A CSV File reader that implements the above functions. *)
