@@ -1,3 +1,4 @@
+(** TODO: header function + handle cases with no date + different date formats*)
 module type CsvReaderType = sig
   type row
   type t = row list
@@ -32,8 +33,10 @@ module type CsvReaderType = sig
   val get_volumes : t -> int option list
   val head : t -> int -> row list
   val tail : t -> int -> row list
-  val print_data : t -> unit
+  val string_of_row : row -> string
   val print_row : row -> unit
+  val string_of_data : t -> string
+  val print_data : t -> unit
 end
 
 module CsvReader : CsvReaderType = struct
@@ -85,8 +88,11 @@ module CsvReader : CsvReaderType = struct
   let filter_header header keys =
     List.map
       (fun col_name ->
+        print_endline col_name;
         match index_of col_name header with
-        | -1 -> raise (Sys_error "Column not found in the CSV file.")
+        | -1 ->
+            raise
+              (Sys_error ("Column " ^ col_name ^ " not found in the CSV file."))
         | index -> index)
       keys
 
@@ -120,7 +126,8 @@ module CsvReader : CsvReaderType = struct
      containing just the string itself. *)
   let extract_string (elem : row_field_type option) =
     match elem with
-    | Some (String s) -> Some s
+    | Some (String s) ->
+        if String.length (String.trim s) > 0 then Some s else None
     | _ -> None
 
   let read_csv ~date ~open_price ~high_price ~low_price ~close_price ~adj_price
@@ -130,6 +137,7 @@ module CsvReader : CsvReaderType = struct
       [
         date; open_price; high_price; low_price; close_price; adj_price; volume;
       ]
+      |> List.map (fun s -> String.trim s)
     in
     let header = List.hd csv in
     let selected_indices = filter_header header keys in
@@ -181,43 +189,29 @@ module CsvReader : CsvReaderType = struct
 
   let tail data n = head (List.rev data) n |> List.rev
 
-  let print_field name value =
-    Printf.printf "%s: %s, " name
+  let string_of_field name value =
+    Printf.sprintf "%s: %s, " name
       (match value with
       | Some v -> v
       | None -> "N/A")
 
-  let print_row row =
-    print_field "Date" row.date;
-    print_field "Open Price" (Option.map string_of_float row.open_price);
-    print_field "High Price" (Option.map string_of_float row.high_price);
-    print_field "Low Price" (Option.map string_of_float row.low_price);
-    print_field "Close Price" (Option.map string_of_float row.close_price);
-    print_field "Adj Price" (Option.map string_of_float row.adj_price);
-    Printf.printf "Volume: %s\n"
-      (match row.volume with
-      | Some v -> string_of_int v
-      | None -> "N/A")
+  let string_of_row row =
+    string_of_field "Date" (Option.map (fun s -> s) row.date)
+    ^ string_of_field "Open Price" (Option.map string_of_float row.open_price)
+    ^ string_of_field "High Price" (Option.map string_of_float row.high_price)
+    ^ string_of_field "Low Price" (Option.map string_of_float row.low_price)
+    ^ string_of_field "Close Price" (Option.map string_of_float row.close_price)
+    ^ string_of_field "Adj Price" (Option.map string_of_float row.adj_price)
+    ^ string_of_field "Volume" (Option.map string_of_int row.volume)
 
-  let print_data data =
-    Printf.printf
-      "Date, Open Price, High Price, Low Price, Close Price, Adj Price, Volume\n";
-    List.iter
-      (fun row ->
-        Printf.printf "%s, %s, %s, %s, %s, %s, %s\n"
-          (Option.value ~default:"N/A" row.date)
-          (Option.value ~default:"N/A"
-             (Option.map string_of_float row.open_price))
-          (Option.value ~default:"N/A"
-             (Option.map string_of_float row.high_price))
-          (Option.value ~default:"N/A"
-             (Option.map string_of_float row.low_price))
-          (Option.value ~default:"N/A"
-             (Option.map string_of_float row.close_price))
-          (Option.value ~default:"N/A"
-             (Option.map string_of_float row.adj_price))
-          (Option.value ~default:"N/A" (Option.map string_of_int row.volume)))
-      data
+  let print_row row = string_of_row row |> print_endline
+
+  let string_of_data data =
+    Printf.sprintf
+      "Date, Open Price, High Price, Low Price, Close Price, Adj Price, Volume\n"
+    ^ List.fold_left (fun acc row -> acc ^ string_of_row row) "" data
+
+  let print_data data = string_of_data data |> print_endline
 end
 
 module Main = struct
@@ -236,17 +230,11 @@ module Main = struct
 
     let row_index = 0 in
     let specific_row = get_row data row_index in
-    Printf.printf "\nSpecific Row (%d):\n" row_index;
     print_row specific_row;
 
-    Printf.printf "\nData Size: %d\n" (size data);
-
-    let head_size = 5 in
-    let tail_size = 5 in
-    Printf.printf "\nHead (%d):\n" head_size;
+    let head_size = 0 in
+    let tail_size = 0 in
     print_data (head data head_size);
-
-    Printf.printf "\nTail (%d):\n" tail_size;
     print_data (tail data tail_size)
 end
 

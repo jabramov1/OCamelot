@@ -121,11 +121,10 @@ module type CsvReaderType = sig
       [d]. If [n <= 0] then return the empty list. If [n] is greater than the
       number of rows in [d], then return the entirety of [d]. *)
 
-  val print_data : t -> unit
-  (** [print_data d] prints the data [d] in the form ... *)
-
+  val string_of_row : row -> string
   val print_row : row -> unit
-  (** [print_row r] prints a given row [r] in*)
+  val string_of_data : t -> string
+  val print_data : t -> unit
 end
 
 module CsvReader : CsvReaderType
