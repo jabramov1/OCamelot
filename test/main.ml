@@ -14,36 +14,65 @@ module CsvReaderTester = struct
     | None -> "None"
     | Some x -> "Some " ^ f x
 
-  let string_of_list f lst =
-    "[" ^ List.fold_left (fun acc elem -> acc ^ f elem) "" lst ^ "]"
+  (* let string_of_list f lst = "[" ^ List.fold_left (fun acc elem -> acc ^ f
+     elem) "" lst ^ "]" *)
 
-  (* let test_size out csv = "size test" >:: fun _ -> assert_equal
-     ~printer:string_of_int out (CsvReader.size csv)
+  let test_size out csv =
+    "size test" >:: fun _ ->
+    assert_equal ~printer:string_of_int out (CsvReader.size csv)
 
-     let test_get_row ~n out csv = let size = CsvReader.size csv in if n < 0 ||
-     n >= size then "get row test, invalid index" >:: fun _ -> assert_raises
-     Not_found (fun _ -> CsvReader.get_row csv n) else "get row test" >:: fun _
-     -> assert_equal out (CsvReader.get_row csv n) *)
+  let test_get_row ~n out csv =
+    let size = CsvReader.size csv in
+    if n < 0 || n >= size then
+      "get row test, invalid index" >:: fun _ ->
+      assert_raises Not_found (fun _ -> CsvReader.get_row csv n)
+    else
+      "get row test" >:: fun _ ->
+      assert_equal out (CsvReader.get_row csv n |> CsvReader.string_of_row)
 
   let test_row_getter ~p ~f ~fname ~idx out csv =
     let len = CsvReader.size csv in
     let row = List.nth (CsvReader.head csv len) idx in
     fname ^ " test" >:: fun _ -> assert_equal ~printer:p out (f row)
 
-  (* let test_col_getter ~p ~f ~col out csv = col >:: fun _ -> assert_equal
-     ~printer:p out (f csv) *)
+  let test_head_tail ~p ~n ~f csv =
+    let rows =
+      if f = "head" then CsvReader.head csv n else CsvReader.tail csv n
+    in
+    let rec test_gen ~p ~f rows acc =
+      match rows with
+      | [] -> acc
+      | h :: t ->
+          ( f ^ " test" >:: fun _ ->
+            assert_equal ~printer:p (CsvReader.get_row rows (List.length acc)) h
+          )
+          :: test_gen ~p ~f t acc
+    in
+    test_gen ~p ~f rows []
 
-  let test_head ~p ~n out csv =
-    "head test" >:: fun _ -> assert_equal ~printer:p out (CsvReader.head csv n)
+  let size_tests =
+    [
+      test_size 9 general_csv;
+      test_size 0 (CsvReader.head general_csv 0);
+      test_size 3 (CsvReader.head general_csv 3);
+      test_size 9 (CsvReader.head general_csv 9);
+    ]
 
-  let test_tail ~p ~n out csv =
-    "tail test" >:: fun _ -> assert_equal ~printer:p out (CsvReader.tail csv n)
-
-  (* let test_print_data out csv = "print data test" >:: fun _ -> assert_equal
-     out (CsvReader.print_data csv)
-
-     let test_print_row out csv = "print row test" >:: fun _ -> assert_equal out
-     (CsvReader.print_row csv) *)
+  let get_row_tests =
+    [
+      test_get_row ~n:(-1) "" general_csv;
+      test_get_row ~n:0
+        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993, Low \
+         Price: 290.980011, Close Price: 291.730011, Adj Price: N/A, Volume: \
+         62078900"
+        general_csv;
+      test_get_row ~n:9
+        "Date: 2018-10-11, Open Price: N/A, High Price: 278.899994, Low Price: \
+         270.359985, Close Price: 272.170013, Adj Price: 250.377533, Volume: \
+         274840500"
+        general_csv;
+      test_get_row ~n:100 "" general_csv;
+    ]
 
   let get_date_tests =
     [
@@ -133,45 +162,34 @@ module CsvReaderTester = struct
   let col_getter_tests = List.flatten []
 
   let head_tests =
-    [
-      test_head
-        ~p:(string_of_list CsvReader.string_of_row)
-        ~n:(-1) [] general_csv;
-      test_head ~p:(string_of_list CsvReader.string_of_row) ~n:0 [] general_csv;
-      test_head
-        ~p:(string_of_list CsvReader.string_of_row)
-        ~n:9 general_csv general_csv;
-      test_head
-        ~p:(string_of_list CsvReader.string_of_row)
-        ~n:100 general_csv general_csv;
-    ]
+    List.flatten
+      [
+        test_head_tail ~p:CsvReader.string_of_row ~n:(-1) ~f:"head" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:0 ~f:"head" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:3 ~f:"head" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:9 ~f:"head" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:100 ~f:"head" general_csv;
+      ]
 
   let tail_tests =
-    [
-      test_tail
-        ~p:(string_of_list CsvReader.string_of_row)
-        ~n:(-1) [] general_csv;
-      test_tail ~p:(string_of_list CsvReader.string_of_row) ~n:0 [] general_csv;
-      test_tail
-        ~p:(string_of_list CsvReader.string_of_row)
-        ~n:9 general_csv general_csv;
-      test_tail
-        ~p:(string_of_list CsvReader.string_of_row)
-        ~n:100 general_csv general_csv;
-    ]
-
-  let print_data_tests = []
-  let print_row_tests = []
+    List.flatten
+      [
+        test_head_tail ~p:CsvReader.string_of_row ~n:(-1) ~f:"tail" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:0 ~f:"tail" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:3 ~f:"tail" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:9 ~f:"tail" general_csv;
+        test_head_tail ~p:CsvReader.string_of_row ~n:100 ~f:"tail" general_csv;
+      ]
 
   let all_tests =
     List.flatten
       [
         row_getter_tests;
         col_getter_tests;
+        get_row_tests;
+        size_tests;
         head_tests;
         tail_tests;
-        print_data_tests;
-        print_row_tests;
       ]
 end
 

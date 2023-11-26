@@ -190,10 +190,13 @@ module CsvReader : CsvReaderType = struct
   let tail data n = head (List.rev data) n |> List.rev
 
   let string_of_field name value =
-    Printf.sprintf "%s: %s, " name
-      (match value with
+    let unwrap_opt =
+      match value with
       | Some v -> v
-      | None -> "N/A")
+      | None -> "N/A"
+    in
+    if name = "Volume" then Printf.sprintf "%s: %s" name unwrap_opt
+    else Printf.sprintf "%s: %s, " name unwrap_opt
 
   let string_of_row row =
     string_of_field "Date" (Option.map (fun s -> s) row.date)
