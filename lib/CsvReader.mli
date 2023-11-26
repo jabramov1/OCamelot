@@ -29,25 +29,31 @@ module type CsvReaderType = sig
 
       @param date
         The title of the column (within the header) that stores the dates.
+        Surrounding whitespace is ignored.
 
       @param open_price
         The title of the column (within the header) that stores the open prices.
+        Surrounding whitespace is ignored.
 
       @param high_price
         The title of the column (within the header) that stores the high prices.
+        Surrounding whitespace is ignored.
 
       @param low_price
         The title of the column (within the header) that stores the low prices.
+        Surrounding whitespace is ignored.
 
       @param close_price
-        The title of the column (within the header) that stores the closing
-        prices.
+        The title of the column (within the header) that stores the closing.
+        Surrounding whitespace is ignored. prices.
 
       @param adj_price
         The title of the column (within the header) that stores adjusted prices.
+        Surrounding whitespace is ignored.
 
       @param volume
         The title of the column (within the header) that stores the volumes.
+        Surrounding whitespace is ignored.
 
       @param separator
         The character of the separator between entries in the CSV file. The
@@ -122,9 +128,29 @@ module type CsvReaderType = sig
       number of rows in [d], then return the entirety of [d]. *)
 
   val string_of_row : row -> string
+  (** [string_of_row r] converts a given row from the CSV data representation
+      into a readable string format. Entries in a row without any data are
+      replaced with "N/A".
+
+      Example output: "Date: 2018-10-01, Open Price: 292.109985, High Price:
+      292.929993, Low \ Price: 290.980011, Close Price: 291.730011, Adj Price:
+      N/A, Volume: \ 62078900" *)
+
   val print_row : row -> unit
+  (** [print_row r] prints a given row from the CSV data representation type in
+      a readable format. The format of the output is the same as the one in
+      [string_of_row r]. *)
+
   val string_of_data : t -> string
+  (** [string_of_data d] converts the entire CSV data representation into a
+      readable string format. All rows in the CSV data representation have the
+      format of [string_of_row]. Each of these rows is separated by a newline in
+      the string. *)
+
   val print_data : t -> unit
+  (** [print_data d] prints the entire CSV data representation in a readable
+      format. The format of the output is the same as the one in
+      [string_of_data d]. *)
 end
 
 module CsvReader : CsvReaderType

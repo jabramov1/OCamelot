@@ -1,4 +1,4 @@
-(** TODO: header function + handle cases with no date + different date formats*)
+(** TODO: handle different date formats + accept both float/int *)
 module type CsvReaderType = sig
   type row
   type t = row list
@@ -210,9 +210,7 @@ module CsvReader : CsvReaderType = struct
   let print_row row = string_of_row row |> print_endline
 
   let string_of_data data =
-    Printf.sprintf
-      "Date, Open Price, High Price, Low Price, Close Price, Adj Price, Volume\n"
-    ^ List.fold_left (fun acc row -> acc ^ string_of_row row) "" data
+    List.fold_left (fun acc row -> acc ^ string_of_row row ^ "\n") "" data
 
   let print_data data = string_of_data data |> print_endline
 end
@@ -235,7 +233,7 @@ module Main = struct
     let specific_row = get_row data row_index in
     print_row specific_row;
 
-    let head_size = 0 in
+    let head_size = 3 in
     let tail_size = 0 in
     print_data (head data head_size);
     print_data (tail data tail_size)
