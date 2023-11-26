@@ -7,15 +7,10 @@ let general_csv =
     "data/test/general.csv"
 
 module CsvReaderTester = struct
-  let string_of_string s = s
-
   let string_of_opt f s =
     match s with
     | None -> "None"
     | Some x -> "Some " ^ f x
-
-  (* let string_of_list f lst = "[" ^ List.fold_left (fun acc elem -> acc ^ f
-     elem) "" lst ^ "]" *)
 
   let test_size out csv =
     "size test" >:: fun _ ->
@@ -31,9 +26,21 @@ module CsvReaderTester = struct
       assert_equal out (CsvReader.get_row csv n |> CsvReader.string_of_row)
 
   let test_row_getter ~p ~f ~fname ~idx out csv =
-    let len = CsvReader.size csv in
-    let row = List.nth (CsvReader.head csv len) idx in
+    let size = CsvReader.size csv in
+    let row = List.nth (CsvReader.head csv size) idx in
     fname ^ " test" >:: fun _ -> assert_equal ~printer:p out (f row)
+
+  let test_col_getter ~p ~f ~fname ~fst ~lst csv =
+    let col = f csv in
+    let size = List.length col in
+    let first = List.nth col 0 in
+    let last = List.nth col (size - 1) in
+    [
+      ( fname ^ " test size" >:: fun _ ->
+        assert_equal ~printer:string_of_int (CsvReader.size csv) size );
+      (fname ^ " test first" >:: fun _ -> assert_equal ~printer:p fst first);
+      (fname ^ " test last" >:: fun _ -> assert_equal ~printer:p lst last);
+    ]
 
   let test_head_tail ~p ~n ~f csv =
     let rows =
@@ -77,15 +84,15 @@ module CsvReaderTester = struct
   let get_date_tests =
     [
       test_row_getter
-        ~p:(string_of_opt string_of_string)
+        ~p:(string_of_opt (fun s -> s))
         ~f:CsvReader.get_date ~fname:"date getter" ~idx:0 (Some "2018-10-01")
         general_csv;
       test_row_getter
-        ~p:(string_of_opt string_of_string)
+        ~p:(string_of_opt (fun s -> s))
         ~f:CsvReader.get_date ~fname:"date getter" ~idx:4 (Some "2018-10-05")
         general_csv;
       test_row_getter
-        ~p:(string_of_opt string_of_string)
+        ~p:(string_of_opt (fun s -> s))
         ~f:CsvReader.get_date ~fname:"date getter" ~idx:5 None general_csv;
     ]
 
@@ -159,7 +166,38 @@ module CsvReaderTester = struct
         get_volume_tests;
       ]
 
-  let col_getter_tests = List.flatten []
+  let col_getter_tests =
+    List.flatten
+      [
+        test_col_getter
+          ~p:(string_of_opt (fun s -> s))
+          ~f:CsvReader.get_dates ~fname:"dates col getter"
+          ~fst:(Some "2018-10-01") ~lst:(Some "2018-10-11") general_csv;
+        test_col_getter
+          ~p:(string_of_opt string_of_float)
+          ~f:CsvReader.get_open_prices ~fname:"open prices col getter"
+          ~fst:(Some 292.109985) ~lst:None general_csv;
+        test_col_getter
+          ~p:(string_of_opt string_of_float)
+          ~f:CsvReader.get_high_prices ~fname:"high prices col getter"
+          ~fst:(Some 292.929993) ~lst:(Some 278.899994) general_csv;
+        test_col_getter
+          ~p:(string_of_opt string_of_float)
+          ~f:CsvReader.get_low_prices ~fname:"low prices col getter"
+          ~fst:(Some 290.980011) ~lst:(Some 270.359985) general_csv;
+        test_col_getter
+          ~p:(string_of_opt string_of_float)
+          ~f:CsvReader.get_closing_prices ~fname:"closing prices col getter"
+          ~fst:(Some 291.730011) ~lst:(Some 272.170013) general_csv;
+        test_col_getter
+          ~p:(string_of_opt string_of_float)
+          ~f:CsvReader.get_adj_prices ~fname:"adj prices col getter" ~fst:None
+          ~lst:(Some 250.377533) general_csv;
+        test_col_getter
+          ~p:(string_of_opt string_of_int)
+          ~f:CsvReader.get_volumes ~fname:"volumes col getter"
+          ~fst:(Some 62078900) ~lst:(Some 274840500) general_csv;
+      ]
 
   let head_tests =
     List.flatten
@@ -196,23 +234,3 @@ end
 let csv_tests = List.flatten [ CsvReaderTester.all_tests ]
 let suite = "main test suite" >::: List.flatten [ csv_tests ]
 let _ = run_test_tt_main suite
-
-(* let empty_csv = CsvReader.read_csv "../data/test/empty.csv" *)
-
-(* let no_header_csv = CsvReader.read_csv "../data/test/no_header.csv"
-   ~date:"Date" ~open_price:"Open" ~high_price:"High" ~low_price:"Low"
-   ~close_price:"Close" ~adj_price:"Adj Close" ~volume:"Volume" *)
-
-(* let no_data_csv = CsvReader.read_csv "../data/test/no_data.csv" ~date:"Date"
-   ~open_price:"Open" ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
-   ~adj_price:"Adj Close" ~volume:"Volume" *)
-(* let messy_csv = CsvReader.read_csv "../data/test/messy.csv" ~date:"Date"
-   ~open_price:"Open" ~high_price:"High" ~low_price:"Low" ~close_price:"Close"
-   ~adj_price:"Adj Close" ~volume:"Volume" *)
-
-(** Can probably make this concise with higher order functions *)
-(* let test_getter outs f _ = let inputs = [ messy_csv; messy_csv; messy_csv ]
-   in
-
-   let rec test_inputs = function | [], [] -> () | input :: inputs, expected ::
-   expected_outputs -> let result_ = f input in assert_equal expected result; *)
