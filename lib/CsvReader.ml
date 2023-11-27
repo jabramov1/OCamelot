@@ -1,4 +1,5 @@
-(** TODO: handle different date formats + accept both float/int *)
+(** TODO: handle different date formats + accept both float/int + sort dates +
+    float volume? *)
 module type CsvReaderType = sig
   type row
   type t = row list

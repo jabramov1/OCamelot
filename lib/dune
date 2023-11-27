@@ -1,9 +1,4 @@
 (library
  (name ocamelot)
  (public_name OCamelot)
- (libraries base csv gnuplot)
- (modules CsvReader))
-
-; (executable
-;  (name CsvReader)
-;  (libraries base csv gnuplot))
+ (libraries base csv gnuplot))
