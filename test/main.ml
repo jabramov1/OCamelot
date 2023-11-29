@@ -1,10 +1,21 @@
 open Ocamelot.CsvReader
+open Ocamelot.MovingAverage
 open OUnit2
 
 let general_csv =
   CsvReader.read_csv ~date:"   the date   " ~open_price:"Open" ~high_price:"hi"
     ~low_price:"Low" ~close_price:" Close" ~adj_price:"adj" ~volume:"vol1234 "
     "data/test/general.csv"
+
+let print_list f lst =
+  "[" ^ List.fold_left (fun acc elem -> acc ^ f elem) "" lst ^ "]"
+
+let string_of_float_opt (n : float option) =
+  match n with
+  | None -> "None"
+  | Some n -> string_of_float n
+
+let format_float (f : float) (prec : int) = Printf.sprintf "%.*f" prec f
 
 module CsvReaderTester = struct
   let string_of_opt f s =
@@ -231,6 +242,24 @@ module CsvReaderTester = struct
       ]
 end
 
-let csv_tests = List.flatten [ CsvReaderTester.all_tests ]
+module MovingAverageTester = struct
+  let test_sma ~w_size out csv =
+    "SMA (window size: " ^ Printf.sprintf "%d" w_size ^ ")" >:: fun _ ->
+    assert_equal
+      ~printer:(print_list string_of_float_opt)
+      out
+      (MovingAverage.simple_moving_avg csv w_size
+      |> List.map (fun elem ->
+             match elem with
+             | None -> None
+             | Some n -> Some (format_float n 3 |> float_of_string)))
+
+  let sma_tests = [ test_sma ~w_size:9 [ Some 286.320 ] general_csv ]
+  let all_tests = List.flatten [ sma_tests ]
+end
+
+let csv_tests =
+  List.flatten [ CsvReaderTester.all_tests; MovingAverageTester.all_tests ]
+
 let suite = "main test suite" >::: List.flatten [ csv_tests ]
 let _ = run_test_tt_main suite

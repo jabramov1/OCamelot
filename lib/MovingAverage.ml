@@ -3,7 +3,7 @@ open CsvReader
 (** SMA for open/high etc.? *)
 
 module type MovingAverageType = sig
-  val simple_moving_avg : CsvReader.t -> int -> float list
+  val simple_moving_avg : CsvReader.t -> int -> float option list
   val exp_moving_avg : unit
   val weighted_moving_avg : unit
   val triangular_moving_avg : unit
@@ -11,25 +11,25 @@ module type MovingAverageType = sig
   val mean : unit
 end
 
-module MovingAverages = struct
+module MovingAverage = struct
   let rec take n prices =
     match (prices, n) with
     | [], _ -> []
     | h :: _, 1 -> [ h ]
     | h :: t, n -> h :: take (n - 1) t
 
-  let rec gen_windows size data =
+  let gen_windows data size =
     let prices = CsvReader.get_closing_prices data in
-    let rec helper size prices =
+    let rec helper prices size =
       let len = List.length prices in
       if len < size then []
       else
         match prices with
         | [] -> []
         | _ :: t ->
-            if len = size then [ prices ] else take size prices :: helper size t
+            if len = size then [ prices ] else take size prices :: helper t size
     in
-    helper size prices
+    helper prices size
 
   let valid_prices prices =
     List.filter
@@ -38,16 +38,21 @@ module MovingAverages = struct
 
   let window_sma window =
     let valid_prices = valid_prices window in
-    let rec sum prices acc =
-      match prices with
-      | [] -> acc
-      | Some price :: t -> sum t (acc +. price)
-      | _ -> failwith "Impossible."
-    in
-    sum valid_prices 0. /. (List.length valid_prices |> float_of_int)
+    if List.length valid_prices = 0 then None
+    else
+      let rec sum prices acc =
+        match prices with
+        | [] -> acc
+        | Some price :: t -> sum t (acc +. price)
+        | _ -> failwith "Impossible."
+      in
+      let sma =
+        sum valid_prices 0. /. (List.length valid_prices |> float_of_int)
+      in
+      Some sma
 
-  let simple_moving_avg size data =
-    let windows = gen_windows size data in
+  let simple_moving_avg data size =
+    let windows = gen_windows data size in
     List.fold_left (fun acc window -> window_sma window :: acc) [] windows
     |> List.rev
 end
