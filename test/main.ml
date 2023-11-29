@@ -8,12 +8,12 @@ let general_csv =
     "data/test/general.csv"
 
 let print_list f lst =
-  "[" ^ List.fold_left (fun acc elem -> acc ^ f elem) "" lst ^ "]"
+  "[ " ^ List.fold_left (fun acc elem -> acc ^ f elem ^ "; ") "" lst ^ "]"
 
 let string_of_float_opt (n : float option) =
   match n with
   | None -> "None"
-  | Some n -> string_of_float n
+  | Some n -> "Some " ^ string_of_float n
 
 let format_float (f : float) (prec : int) = Printf.sprintf "%.*f" prec f
 
@@ -254,7 +254,29 @@ module MovingAverageTester = struct
              | None -> None
              | Some n -> Some (format_float n 3 |> float_of_string)))
 
-  let sma_tests = [ test_sma ~w_size:9 [ Some 286.320 ] general_csv ]
+  let sma_tests =
+    [
+      test_sma ~w_size:(-1) [] general_csv;
+      test_sma ~w_size:0 [] general_csv;
+      test_sma ~w_size:1
+        [
+          Some 291.730;
+          Some 291.560;
+          Some 291.720;
+          Some 289.440;
+          Some 287.820;
+          Some 287.820;
+          None;
+          Some 278.300;
+          Some 272.170;
+        ]
+        general_csv;
+      test_sma ~w_size:5
+        [ Some 290.454; Some 289.672; Some 289.2; Some 285.845; Some 281.528 ]
+        general_csv;
+      test_sma ~w_size:9 [ Some 286.320 ] general_csv;
+    ]
+
   let all_tests = List.flatten [ sma_tests ]
 end
 

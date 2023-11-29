@@ -1,17 +1,15 @@
 open CsvReader
 
-(** SMA for open/high etc.? *)
-
 module type MovingAverageType = sig
   val simple_moving_avg : CsvReader.t -> int -> float option list
-  val exp_moving_avg : unit
+  val exp_moving_avg : CsvReader.t -> int -> float option list
   val weighted_moving_avg : unit
   val triangular_moving_avg : unit
   val variable_moving_avg : unit
   val mean : unit
 end
 
-module MovingAverage = struct
+module MovingAverage : MovingAverageType = struct
   let rec take n prices =
     match (prices, n) with
     | [], _ -> []
@@ -52,7 +50,15 @@ module MovingAverage = struct
       Some sma
 
   let simple_moving_avg data size =
-    let windows = gen_windows data size in
-    List.fold_left (fun acc window -> window_sma window :: acc) [] windows
-    |> List.rev
+    if size <= 0 then []
+    else
+      let windows = gen_windows data size in
+      List.fold_left (fun acc window -> window_sma window :: acc) [] windows
+      |> List.rev
+
+  let exp_moving_avg = failwith "Unimplemented"
+  let weighted_moving_avg = failwith "Unimplemented"
+  let triangular_moving_avg = failwith "Unimplemented"
+  let variable_moving_avg = failwith "Unimplemented"
+  let mean = failwith "Unimplemented"
 end
