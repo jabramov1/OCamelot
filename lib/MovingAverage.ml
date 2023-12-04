@@ -6,44 +6,46 @@ module type MovingAverageType = sig
   val weighted_moving_avg : unit
   val triangular_moving_avg : unit
   val variable_moving_avg : unit
-  val mean : unit
 end
 
-module MovingAverage : MovingAverageType = struct
+module MovingAverage = struct
   let rec take n prices =
     match (prices, n) with
     | [], _ -> []
     | h :: _, 1 -> [ h ]
     | h :: t, n -> h :: take (n - 1) t
 
+  let rec divide_windows size prices =
+    let len = List.length prices in
+    if len < size then []
+    else
+      match prices with
+      | [] -> []
+      | _ :: t ->
+          if len = size then [ prices ]
+          else take size prices :: divide_windows size t
+
   let gen_windows data size =
-    let prices = CsvReader.get_closing_prices data in
-    let rec helper prices size =
-      let len = List.length prices in
-      if len < size then []
-      else
-        match prices with
-        | [] -> []
-        | _ :: t ->
-            if len = size then [ prices ] else take size prices :: helper t size
+    CsvReader.get_closing_prices data |> divide_windows size
+
+  let rec valid_prices prices =
+    let rec helper prices acc =
+      match prices with
+      | [] -> acc |> List.rev
+      | None :: t -> helper t acc
+      | Some price :: t -> helper t (price :: acc)
     in
-    helper prices size
+    helper prices []
 
-  let valid_prices prices =
-    List.filter
-      (fun price -> if Option.is_some price then true else false)
-      prices
+  let rec sum prices acc =
+    match prices with
+    | [] -> acc
+    | price :: t -> sum t (acc +. price)
 
-  let window_sma window =
+  let single_sma window =
     let valid_prices = valid_prices window in
     if List.length valid_prices = 0 then None
     else
-      let rec sum prices acc =
-        match prices with
-        | [] -> acc
-        | Some price :: t -> sum t (acc +. price)
-        | _ -> failwith "Impossible."
-      in
       let sma =
         sum valid_prices 0. /. (List.length valid_prices |> float_of_int)
       in
@@ -53,12 +55,42 @@ module MovingAverage : MovingAverageType = struct
     if size <= 0 then []
     else
       let windows = gen_windows data size in
-      List.fold_left (fun acc window -> window_sma window :: acc) [] windows
+      List.fold_left (fun acc window -> single_sma window :: acc) [] windows
       |> List.rev
 
-  let exp_moving_avg = failwith "Unimplemented"
+  let single_ema window prev =
+    let valid_prices = valid_prices window in
+    if List.length valid_prices = 0 then None
+    else
+      let n = List.length window in
+      let alpha = 2. /. float_of_int (n + 1) in
+      let rec helper prices prev acc =
+        match prices with
+        | [] -> acc
+        | h :: t ->
+            let curr_ema = (h *. alpha) +. (prev *. (1. -. alpha)) in
+            helper t curr_ema (curr_ema +. acc)
+      in
+      Some (helper valid_prices prev 0.)
+
+  let exp_moving_avg data n =
+    if n <= 0 then []
+    else
+      let windows = gen_windows data n in
+      List.fold_left
+        (fun acc window ->
+          let init_ema = single_sma window in
+          begin
+            match init_ema with
+            | None -> None :: acc
+            | Some init_ema ->
+                let ema = single_ema window init_ema in
+                ema :: acc
+          end)
+        [] windows
+      |> List.rev
+
   let weighted_moving_avg = failwith "Unimplemented"
   let triangular_moving_avg = failwith "Unimplemented"
   let variable_moving_avg = failwith "Unimplemented"
-  let mean = failwith "Unimplemented"
 end
