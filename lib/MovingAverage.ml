@@ -90,7 +90,29 @@ module MovingAverage = struct
         [] windows
       |> List.rev
 
-  let weighted_moving_avg = failwith "Unimplemented"
+  let single_wma window =
+    let valid_prices = valid_prices window in
+    if List.length valid_prices = 0 then None
+    else
+      let n = List.length valid_prices |> float_of_int in
+      let den = n *. (n +. 1.) /. 2. in
+      let rec w_sum prices n acc =
+        match prices with
+        | [] -> acc
+        | h :: t ->
+            let new_acc = (h *. n) +. acc in
+            w_sum t (n -. 1.) new_acc
+      in
+      let sum = w_sum valid_prices n 0. in
+      Some (sum /. den)
+
+  let weighted_moving_avg data n =
+    if n <= 0 then []
+    else
+      let windows = gen_windows data n in
+      List.fold_left (fun acc window -> single_wma window :: acc) [] windows
+      |> List.rev
+
   let triangular_moving_avg = failwith "Unimplemented"
   let variable_moving_avg = failwith "Unimplemented"
 end
