@@ -3,17 +3,22 @@ open CsvReader
 module type MovingAverageType = sig
   val simple_moving_avg : CsvReader.t -> int -> float option list
   val exp_moving_avg : CsvReader.t -> int -> float option list
-  val weighted_moving_avg : unit
-  val triangular_moving_avg : unit
-  val variable_moving_avg : unit
+  val weighted_moving_avg : CsvReader.t -> int -> float option list
+  val triangular_moving_avg : CsvReader.t -> int -> float option list
+  val variable_moving_avg : CsvReader.t -> int -> float option list
 end
 
-module MovingAverage = struct
+(** TODO: case where n larger than list size -> just revert to size of list *)
+
+module MovingAverage : MovingAverageType = struct
   let rec take n prices =
     match (prices, n) with
     | [], _ -> []
     | h :: _, 1 -> [ h ]
     | h :: t, n -> h :: take (n - 1) t
+
+  (* let rec take_last n prices = match (prices, n) with | [], _ -> [] | _ :: t,
+     1 -> t | _ :: t, n -> take_last (n - 1) t *)
 
   let rec divide_windows size prices =
     let len = List.length prices in
@@ -28,7 +33,7 @@ module MovingAverage = struct
   let gen_windows data size =
     CsvReader.get_closing_prices data |> divide_windows size
 
-  let rec valid_prices prices =
+  let valid_prices prices =
     let rec helper prices acc =
       match prices with
       | [] -> acc |> List.rev
@@ -58,37 +63,37 @@ module MovingAverage = struct
       List.fold_left (fun acc window -> single_sma window :: acc) [] windows
       |> List.rev
 
-  let single_ema window prev =
-    let valid_prices = valid_prices window in
-    if List.length valid_prices = 0 then None
-    else
-      let n = List.length window in
-      let alpha = 2. /. float_of_int (n + 1) in
-      let rec helper prices prev acc =
-        match prices with
-        | [] -> acc
-        | h :: t ->
-            let curr_ema = (h *. alpha) +. (prev *. (1. -. alpha)) in
-            helper t curr_ema (curr_ema +. acc)
-      in
-      Some (helper valid_prices prev 0.)
+  let single_ema window prev multiplier =
+    let w_size = List.length window in
+    let curr_price = List.nth window (w_size - 1) in
+    match curr_price with
+    | None -> None
+    | Some price ->
+        let ema = (price *. multiplier) +. (prev *. (1. -. multiplier)) in
+        Some ema
 
   let exp_moving_avg data n =
+    let n = min n (CsvReader.get_closing_prices data |> List.length) in
     if n <= 0 then []
     else
       let windows = gen_windows data n in
-      List.fold_left
-        (fun acc window ->
-          let init_ema = single_sma window in
-          begin
-            match init_ema with
-            | None -> None :: acc
-            | Some init_ema ->
-                let ema = single_ema window init_ema in
-                ema :: acc
-          end)
-        [] windows
-      |> List.rev
+      let multiplier = 2. /. (float_of_int n +. 1.) in
+      let init_ema = List.hd windows |> single_sma in
+
+      let rec calculate_ema windows prev multiplier acc =
+        match windows with
+        | [] -> List.rev acc
+        | h :: t ->
+            let ema = single_ema h prev multiplier in
+            if Option.is_some ema then
+              calculate_ema t
+                (Option.value ema ~default:0.)
+                multiplier (ema :: acc)
+            else calculate_ema t prev multiplier (ema :: acc)
+      in
+      if Option.is_none init_ema then []
+      else
+        calculate_ema windows (Option.value init_ema ~default:0.) multiplier []
 
   let single_wma window =
     let valid_prices = valid_prices window in
@@ -107,12 +112,26 @@ module MovingAverage = struct
       Some (sum /. den)
 
   let weighted_moving_avg data n =
+    let n = min n (CsvReader.get_closing_prices data |> List.length) in
     if n <= 0 then []
     else
       let windows = gen_windows data n in
       List.fold_left (fun acc window -> single_wma window :: acc) [] windows
       |> List.rev
 
-  let triangular_moving_avg = failwith "Unimplemented"
-  let variable_moving_avg = failwith "Unimplemented"
+  (** https://tulipindicators.org/trima *)
+  (* let rec single_tma = failwith "yres" *)
+
+  let triangular_moving_avg data n =
+    CsvReader.print_data data;
+    print_int n;
+    []
+  (* if n <= 0 then [] else let sma = simple_moving_avg data n = let prices =
+     take_last n data in List.fold_left (fun acc elem -> single_tma sma n ::
+     acc) [] prices in failwith "yes" *)
+
+  let variable_moving_avg data n =
+    CsvReader.print_data data;
+    print_int n;
+    []
 end
