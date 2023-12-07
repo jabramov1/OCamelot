@@ -1,4 +1,5 @@
 open CsvReader
+(** https://www.fmlabs.com/reference/default.htm?url=VariableMA.htm *)
 
 module type MovingAverageType = sig
   val simple_moving_avg : CsvReader.t -> int -> float option list
@@ -8,17 +9,12 @@ module type MovingAverageType = sig
   val vol_adj_moving_avg : CsvReader.t -> int -> float option list
 end
 
-(** TODO: case where n larger than list size -> just revert to size of list *)
-
 module MovingAverage : MovingAverageType = struct
   let rec take n prices =
     match (prices, n) with
     | [], _ -> []
     | h :: _, 1 -> [ h ]
     | h :: t, n -> h :: take (n - 1) t
-
-  (* let rec take_last n prices = match (prices, n) with | [], _ -> [] | _ :: t,
-     1 -> t | _ :: t, n -> take_last (n - 1) t *)
 
   let rec divide_windows size prices =
     let len = List.length prices in
@@ -30,29 +26,40 @@ module MovingAverage : MovingAverageType = struct
           if len = size then [ prices ]
           else take size prices :: divide_windows size t
 
-  let gen_windows data size =
+  let float_of_int_opt n =
+    match n with
+    | None -> None
+    | Some n -> Some (float_of_int n)
+
+  let price_windows data size =
     CsvReader.get_closing_prices data |> divide_windows size
 
-  let valid_prices prices =
-    let rec helper prices acc =
-      match prices with
+  let volume_windows data size =
+    CsvReader.get_volumes data |> divide_windows size
+
+  let valid_entries entries =
+    let rec helper entries acc =
+      match entries with
       | [] -> acc |> List.rev
       | None :: t -> helper t acc
       | Some price :: t -> helper t (price :: acc)
     in
-    helper prices []
+    helper entries []
 
-  let rec sum prices acc =
-    match prices with
-    | [] -> acc
-    | price :: t -> sum t (acc +. price)
+  let sum entries =
+    let rec helper entries acc =
+      match entries with
+      | [] -> acc
+      | entry :: t -> helper t (acc +. entry)
+    in
+    helper entries 0.
 
   let single_sma window =
-    let valid_prices = valid_prices window in
+    let valid_prices = valid_entries window in
     if List.length valid_prices = 0 then None
     else
       let sma =
-        sum valid_prices 0. /. (List.length valid_prices |> float_of_int)
+        sum valid_prices /. (List.length valid_prices |> float_of_int)
       in
       Some sma
 
@@ -60,7 +67,7 @@ module MovingAverage : MovingAverageType = struct
     let size = min size (CsvReader.get_closing_prices data |> List.length) in
     if size <= 0 then []
     else
-      let windows = gen_windows data size in
+      let windows = price_windows data size in
       List.fold_left (fun acc window -> single_sma window :: acc) [] windows
       |> List.rev
 
@@ -77,7 +84,7 @@ module MovingAverage : MovingAverageType = struct
     let n = min n (CsvReader.get_closing_prices data |> List.length) in
     if n <= 0 then []
     else
-      let windows = gen_windows data n in
+      let windows = price_windows data n in
       let multiplier = 2. /. (float_of_int n +. 1.) in
       let init_ema = List.hd windows |> single_sma in
 
@@ -97,7 +104,7 @@ module MovingAverage : MovingAverageType = struct
         calculate_ema windows (Option.value init_ema ~default:0.) multiplier []
 
   let single_wma window =
-    let valid_prices = valid_prices window in
+    let valid_prices = valid_entries window in
     if List.length valid_prices = 0 then None
     else
       let n = List.length valid_prices |> float_of_int in
@@ -116,18 +123,16 @@ module MovingAverage : MovingAverageType = struct
     let n = min n (CsvReader.get_closing_prices data |> List.length) in
     if n <= 0 then []
     else
-      let windows = gen_windows data n in
+      let windows = price_windows data n in
       List.fold_left (fun acc window -> single_wma window :: acc) [] windows
       |> List.rev
-
-  (** https://www.fmlabs.com/reference/default.htm?url=VariableMA.htm *)
 
   let triangular_moving_avg data n =
     if n <= 0 then []
     else if n mod 2 = 0 then
       let size = (n / 2) + 1 in
       let size = min size (CsvReader.get_closing_prices data |> List.length) in
-      let windows = gen_windows data size in
+      let windows = price_windows data size in
       let sma =
         List.fold_left (fun acc window -> single_sma window :: acc) [] windows
         |> List.rev
@@ -139,7 +144,7 @@ module MovingAverage : MovingAverageType = struct
     else
       let size = (n + 1) / 2 in
       let size = min size (CsvReader.get_closing_prices data |> List.length) in
-      let windows = gen_windows data size in
+      let windows = price_windows data size in
       let sma =
         List.fold_left (fun acc window -> single_sma window :: acc) [] windows
         |> List.rev
@@ -149,8 +154,31 @@ module MovingAverage : MovingAverageType = struct
       List.fold_left (fun acc window -> single_sma window :: acc) [] new_windows
       |> List.rev
 
+  let single_vama p_wind v_wind =
+    let valid_prices = valid_entries p_wind in
+    let valid_volumes = valid_entries v_wind in
+    if List.length valid_prices = 0 || List.length valid_volumes = 0 then None
+    else
+      let den = sum valid_volumes in
+      let rec calculate_vama p_wind v_wind acc =
+        match (p_wind, v_wind) with
+        | [], [] -> acc /. den
+        | Some p :: t1, Some v :: t2 -> calculate_vama t1 t2 ((p *. v) +. acc)
+        | _ -> failwith "Invalid input."
+      in
+      let vama = calculate_vama p_wind v_wind 0. in
+      Some vama
+
   let vol_adj_moving_avg data n =
-    CsvReader.print_data data;
-    print_int n;
-    []
+    let n = min n (CsvReader.get_closing_prices data |> List.length) in
+    if n <= 0 then []
+    else
+      let p_windows = price_windows data n in
+      let v_windows =
+        volume_windows data n |> List.map (List.map float_of_int_opt)
+      in
+      List.fold_left2
+        (fun acc p_wind v_wind -> single_vama p_wind v_wind :: acc)
+        [] p_windows v_windows
+      |> List.rev
 end

@@ -260,7 +260,7 @@ module MovingAverageTester = struct
           | "EMA" -> MovingAverage.exp_moving_avg csv w_size
           | "WMA" -> MovingAverage.weighted_moving_avg csv w_size
           | "TMA" -> MovingAverage.triangular_moving_avg csv w_size
-          | "VADJ" -> MovingAverage.vol_adj_moving_avg csv w_size
+          | "VAMA" -> MovingAverage.vol_adj_moving_avg csv w_size
           | _ -> failwith "Invalid input."
         in
         List.map format_float_opt avg
@@ -392,6 +392,7 @@ module MovingAverageTester = struct
         [ Some 290.746; Some 289.642; Some 288.613; Some 286.413; Some 282.038 ]
         general_csv;
       test_avg ~w_size:25 ~fname:"TMA" [ Some 286.320 ] general_csv;
+      test_avg ~w_size:26 ~fname:"TMA" [ Some 286.320 ] general_csv;
     ]
 
   let all_tests = List.flatten [ sma_tests; ema_tests; wma_tests; tma_tests ]
