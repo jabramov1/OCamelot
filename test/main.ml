@@ -1,28 +1,16 @@
 open Ocamelot.CsvReader
 open Ocamelot.MovingAverage
+open Ocamelot.Utils
 open OUnit2
+
+(** TODO: add scalability testing, file no header, different date formats *)
 
 let general_csv =
   CsvReader.read_csv ~date:"   the date   " ~open_price:"Open" ~high_price:"hi"
     ~low_price:"Low" ~close_price:" Close" ~adj_price:"adj" ~volume:"vol1234 "
     "data/test/general.csv"
 
-let print_list f lst =
-  "[ " ^ List.fold_left (fun acc elem -> acc ^ f elem ^ "; ") "" lst ^ "]"
-
-let string_of_float_opt (n : float option) =
-  match n with
-  | None -> "None"
-  | Some n -> "Some " ^ string_of_float n
-
-let format_float (f : float) (prec : int) = Printf.sprintf "%.*f" prec f
-
 module CsvReaderTester = struct
-  let string_of_opt f s =
-    match s with
-    | None -> "None"
-    | Some x -> "Some " ^ f x
-
   let test_size out csv =
     "size test" >:: fun _ ->
     assert_equal ~printer:string_of_int out (CsvReader.size csv)
@@ -243,15 +231,10 @@ module CsvReaderTester = struct
 end
 
 module MovingAverageTester = struct
-  let format_float_opt n =
-    match n with
-    | None -> None
-    | Some n -> Some (format_float n 3 |> float_of_string)
-
   let test_avg ~w_size ~fname out csv =
     fname ^ " (window size: " ^ Printf.sprintf "%d" w_size ^ ")" >:: fun _ ->
     assert_equal
-      ~printer:(print_list string_of_float_opt)
+      ~printer:(string_of_list string_of_float_opt)
       out
       begin
         let avg =
@@ -263,7 +246,7 @@ module MovingAverageTester = struct
           | "VAMA" -> MovingAverage.vol_adj_moving_avg csv w_size
           | _ -> failwith "Invalid input."
         in
-        List.map format_float_opt avg
+        List.map (format_float_opt ~prec:3) avg
       end
 
   let sma_tests =
@@ -395,7 +378,39 @@ module MovingAverageTester = struct
       test_avg ~w_size:26 ~fname:"TMA" [ Some 286.320 ] general_csv;
     ]
 
-  let all_tests = List.flatten [ sma_tests; ema_tests; wma_tests; tma_tests ]
+  let vama_tests =
+    [
+      test_avg ~w_size:(-1) ~fname:"VAMA" [] general_csv;
+      test_avg ~w_size:0 ~fname:"VAMA" [] general_csv;
+      test_avg ~w_size:1 ~fname:"VAMA"
+        [
+          Some 291.730;
+          Some 291.560;
+          None;
+          Some 289.440;
+          None;
+          Some 287.820;
+          None;
+          Some 278.300;
+          Some 272.170;
+        ]
+        general_csv;
+      test_avg ~w_size:3 ~fname:"VAMA"
+        [
+          Some 291.657;
+          Some 290.071;
+          Some 289.44;
+          Some 288.727;
+          Some 287.82;
+          Some 281.062;
+          Some 274.859;
+        ]
+        general_csv;
+      test_avg ~w_size:9 ~fname:"VAMA" [ Some 280.622 ] general_csv;
+    ]
+
+  let all_tests =
+    List.flatten [ sma_tests; ema_tests; wma_tests; tma_tests; vama_tests ]
 end
 
 let csv_tests =

@@ -1,7 +1,3 @@
-(** TODO: float_or_int + no header options + maybe index optional parameters *)
-
-(** TODO: date delimiter plus order in which dates occur *)
-
 module type CsvReaderType = sig
   type row
   (** Representation type for each row in the CSV file. *)
@@ -25,37 +21,37 @@ module type CsvReaderType = sig
       calculations. An entry x is stored as [Some x], while empty entries and
       entries that don't conform to their required type are stored as [None].
 
-      @raise Sys_error if the given file can't be found.
+      @raise [Sys_error] if the given file can't be found.
 
-      @param date
+      @param [date]
         The title of the column (within the header) that stores the dates.
         Surrounding whitespace is ignored.
 
-      @param open_price
+      @param [open_price]
         The title of the column (within the header) that stores the open prices.
         Surrounding whitespace is ignored.
 
-      @param high_price
+      @param [high_price]
         The title of the column (within the header) that stores the high prices.
         Surrounding whitespace is ignored.
 
-      @param low_price
+      @param [low_price]
         The title of the column (within the header) that stores the low prices.
         Surrounding whitespace is ignored.
 
-      @param close_price
+      @param [close_price]
         The title of the column (within the header) that stores the closing.
         Surrounding whitespace is ignored. prices.
 
-      @param adj_price
+      @param [adj_price]
         The title of the column (within the header) that stores adjusted prices.
         Surrounding whitespace is ignored.
 
-      @param volume
+      @param [volume]
         The title of the column (within the header) that stores the volumes.
         Surrounding whitespace is ignored.
 
-      @param separator
+      @param [separator]
         The character of the separator between entries in the CSV file. The
         default is [',']. *)
 
@@ -67,7 +63,7 @@ module type CsvReaderType = sig
   (** [get_row d n] returns the row in [d] located at index [n]. Indices begin
       at 0.
 
-      @raise Not_found if index is out of bounds. *)
+      @raise [Not_found] if index is out of bounds. *)
 
   val get_date : row -> string option
   (** [get_date r] returns the date for the given row [r]. *)

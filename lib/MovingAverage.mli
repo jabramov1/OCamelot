@@ -1,5 +1,8 @@
 open CsvReader
 
+(** REFERENCE FOR FORMULAE:
+    https://www.fmlabs.com/reference/default.htm?url=VariableMA.htm *)
+
 module type MovingAverageType = sig
   val simple_moving_avg : CsvReader.t -> int -> float option list
   val exp_moving_avg : CsvReader.t -> int -> float option list
