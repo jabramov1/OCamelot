@@ -1,5 +1,6 @@
 (** TODO: handle different date formats + accept both float/int + sort dates +
-    float volume? *)
+    float volume? MAKE_CSV or make_row FUNCTION? *)
+
 module type CsvReaderType = sig
   type row
   type t = row list

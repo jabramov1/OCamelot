@@ -5,7 +5,7 @@ module type MovingAverageType = sig
   val exp_moving_avg : CsvReader.t -> int -> float option list
   val weighted_moving_avg : CsvReader.t -> int -> float option list
   val triangular_moving_avg : CsvReader.t -> int -> float option list
-  val variable_moving_avg : CsvReader.t -> int -> float option list
+  val vol_adj_moving_avg : CsvReader.t -> int -> float option list
 end
 
 (** TODO: case where n larger than list size -> just revert to size of list *)
@@ -57,6 +57,7 @@ module MovingAverage : MovingAverageType = struct
       Some sma
 
   let simple_moving_avg data size =
+    let size = min size (CsvReader.get_closing_prices data |> List.length) in
     if size <= 0 then []
     else
       let windows = gen_windows data size in
@@ -119,18 +120,36 @@ module MovingAverage : MovingAverageType = struct
       List.fold_left (fun acc window -> single_wma window :: acc) [] windows
       |> List.rev
 
-  (** https://tulipindicators.org/trima *)
-  (* let rec single_tma = failwith "yres" *)
+  (** https://www.fmlabs.com/reference/default.htm?url=VariableMA.htm *)
 
   let triangular_moving_avg data n =
-    CsvReader.print_data data;
-    print_int n;
-    []
-  (* if n <= 0 then [] else let sma = simple_moving_avg data n = let prices =
-     take_last n data in List.fold_left (fun acc elem -> single_tma sma n ::
-     acc) [] prices in failwith "yes" *)
+    if n <= 0 then []
+    else if n mod 2 = 0 then
+      let size = (n / 2) + 1 in
+      let size = min size (CsvReader.get_closing_prices data |> List.length) in
+      let windows = gen_windows data size in
+      let sma =
+        List.fold_left (fun acc window -> single_sma window :: acc) [] windows
+        |> List.rev
+      in
+      let new_size = min (size - 1) (List.length sma) in
+      let new_windows = divide_windows new_size sma in
+      List.fold_left (fun acc window -> single_sma window :: acc) [] new_windows
+      |> List.rev
+    else
+      let size = (n + 1) / 2 in
+      let size = min size (CsvReader.get_closing_prices data |> List.length) in
+      let windows = gen_windows data size in
+      let sma =
+        List.fold_left (fun acc window -> single_sma window :: acc) [] windows
+        |> List.rev
+      in
+      let new_size = min size (List.length sma) in
+      let new_windows = divide_windows new_size sma in
+      List.fold_left (fun acc window -> single_sma window :: acc) [] new_windows
+      |> List.rev
 
-  let variable_moving_avg data n =
+  let vol_adj_moving_avg data n =
     CsvReader.print_data data;
     print_int n;
     []
