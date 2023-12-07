@@ -3,7 +3,8 @@ open Ocamelot.MovingAverage
 open Ocamelot.Utils
 open OUnit2
 
-(** TODO: add scalability testing, file no header, different date formats *)
+(** TODO: add scalability testing, file no header, different date formats,
+    make_row, make_csv *)
 
 let general_csv =
   CsvReader.read_csv ~date:"   the date   " ~open_price:"Open" ~high_price:"hi"

@@ -91,7 +91,7 @@ module MovingAverage : MovingAverageType = struct
         window if there is no previous window.
 
       @param multiplier
-        Smoothing constant calculated by [2 / (n + 1)], where n is the length of
+        Smoothing constant calculated by 2 / (n + 1), where n is the length of
         the window. *)
   let single_ema window prev multiplier =
     let w_n = List.length window in
