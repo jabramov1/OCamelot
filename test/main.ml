@@ -13,7 +13,7 @@ let general_csv =
 
 module DateConverterTester = struct
   let test_convert date =
-    "date conversion test" >:: fun _ ->
+    "date\n   conversion test" >:: fun _ ->
     assert_equal
       ~printer:(fun s -> s)
       date
@@ -23,8 +23,6 @@ module DateConverterTester = struct
 end
 
 module CsvReaderTester = struct
-  let date = DateConverter.string_to_date
-
   let test_size out csv =
     "size test" >:: fun _ ->
     assert_equal ~printer:string_of_int out (CsvReader.size csv)
@@ -85,24 +83,30 @@ module CsvReaderTester = struct
     [
       test_get_row ~n:(-1) "" general_csv;
       test_get_row ~n:0
-        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993,  Low\n\
-        \   Price: 290.980011, Close Price: 291.730011, Adj Price: N/A,  Volume:\n\
-        \   62078900." general_csv;
+        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993, Low\n\
+        \ Price: 290.980011, Close Price: 291.730011, Adj Price: N/A, Volume:\n\
+        \ 62078900." general_csv;
       test_get_row ~n:7
         "Date: 2018-10-11, Open Price:\n\
-        \   N/A, High Price: 278.899994, Low  Price: 270.359985, Close Price:\n\
-        \   272.170013, Adj Price: 250.377533,  Volume: 274840500." general_csv;
+        \ N/A, High Price: 278.899994, Low Price: 270.359985, Close Price:\n\
+        \ 272.170013, Adj Price: 250.377533, Volume: 274840500." general_csv;
       test_get_row ~n:100 "" general_csv;
     ]
 
   let get_date_tests =
     [
-      test_row_getter ~p:string_of_float ~f:CsvReader.get_date
-        ~fname:"date getter" ~idx:0 (date "2018-10-01") general_csv;
-      test_row_getter ~p:string_of_float ~f:CsvReader.get_date
-        ~fname:"date getter" ~idx:4 (date "2018-10-05") general_csv;
-      test_row_getter ~p:string_of_float ~f:CsvReader.get_date
-        ~fname:"date getter" ~idx:5 (date "2018-10-06") general_csv;
+      test_row_getter
+        ~p:(fun s -> s)
+        ~f:CsvReader.get_date ~fname:"date getter" ~idx:0 "2018-10-01"
+        general_csv;
+      test_row_getter
+        ~p:(fun s -> s)
+        ~f:CsvReader.get_date ~fname:"date getter" ~idx:4 "2018-10-05"
+        general_csv;
+      test_row_getter
+        ~p:(fun s -> s)
+        ~f:CsvReader.get_date ~fname:"date getter" ~idx:5 "2018-10-06"
+        general_csv;
     ]
 
   let get_open_price_tests =
@@ -178,16 +182,17 @@ module CsvReaderTester = struct
   let col_getter_tests =
     List.flatten
       [
-        test_col_getter ~p:string_of_float ~f:CsvReader.get_dates
-          ~fname:"dates col getter" ~fst:(date "2018-10-01")
-          ~lst:(date "2018-10-11") general_csv;
+        test_col_getter
+          ~p:(fun s -> s)
+          ~f:CsvReader.get_dates ~fname:"dates col getter" ~fst:"2018-10-01"
+          ~lst:"2018-10-11" general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
           ~f:CsvReader.get_open_prices ~fname:"open prices col getter"
           ~fst:(Some 292.109985) ~lst:None general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
-          ~f:CsvReader.get_high_prices ~fname:"high\n   prices col getter"
+          ~f:CsvReader.get_high_prices ~fname:"high\n prices col getter"
           ~fst:(Some 292.929993) ~lst:(Some 278.899994) general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
