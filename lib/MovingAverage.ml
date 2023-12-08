@@ -208,9 +208,7 @@ module MovingAverage : MovingAverageType = struct
     if n <= 0 then []
     else
       let p_windows = price_windows data n in
-      let v_windows =
-        volume_windows data n |> List.map (List.map Utils.float_of_int_opt)
-      in
+      let v_windows = volume_windows data n in
       List.fold_left2
         (fun acc p_wind v_wind -> single_vama p_wind v_wind :: acc)
         [] p_windows v_windows

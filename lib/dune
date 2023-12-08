@@ -1,4 +1,4 @@
 (library
  (name ocamelot)
  (public_name OCamelot)
- (libraries base csv gnuplot))
+ (libraries base csv gnuplot ptime timedesc))

@@ -25,7 +25,8 @@ module type CsvReaderType = sig
 
       @param date
         The title of the column (within the header) that stores the dates.
-        Surrounding whitespace is ignored.
+        Surrounding whitespace is ignored. Empty date or invalid dates are not
+        added to the CSV data representation.
 
       @param open_price
         The title of the column (within the header) that stores the open prices.
@@ -59,13 +60,19 @@ module type CsvReaderType = sig
   (** [size d] returns the number of rows stored in the CSV data representation
       [d]. *)
 
+  val make_row : string list -> row
+  (** INSERT DOCS *)
+
+  val make_csv : string list list -> t
+  (** INSERT DOCS *)
+
   val get_row : t -> int -> row
   (** [get_row d n] returns the row in [d] located at index [n]. Indices begin
       at 0.
 
       @raise Not_found if index is out of bounds. *)
 
-  val get_date : row -> string option
+  val get_date : row -> float
   (** [get_date r] returns the date for the given row [r]. *)
 
   val get_open_price : row -> float option
@@ -83,10 +90,10 @@ module type CsvReaderType = sig
   val get_adj_price : row -> float option
   (** [get_adj_price r] returns the adjusted price for the given row [r]. *)
 
-  val get_volume : row -> int option
+  val get_volume : row -> float option
   (** [get_volume row] returns the date for the given [row]. *)
 
-  val get_dates : t -> string option list
+  val get_dates : t -> float list
   (** [get_dates d] returns the dates column in the CSV data representation [d]. *)
 
   val get_open_prices : t -> float option list
@@ -109,7 +116,7 @@ module type CsvReaderType = sig
   (** [get_adj_prices d] returns the adjusted prices column in the CSV data
       representation [d]. *)
 
-  val get_volumes : t -> int option list
+  val get_volumes : t -> float option list
   (** [get_volumes d] returns the volume column in the CSV data representation
       [d]. *)
 

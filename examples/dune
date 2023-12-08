@@ -1,3 +1,3 @@
 (executable
- (name main)
+ (name demo)
  (libraries ounit2 gnuplot base OCamelot ptime timedesc))

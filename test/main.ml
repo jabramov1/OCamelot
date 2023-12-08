@@ -1,17 +1,30 @@
 open Ocamelot.CsvReader
-open Ocamelot.MovingAverage
 open Ocamelot.Utils
+open Ocamelot.MovingAverage
+open Ocamelot.DateConverter
 open OUnit2
 
-(** TODO: add scalability testing, file no header, different date formats,
-    make_row, make_csv *)
+(** TODO: add scalability testing / diff dates + file no header? *)
 
 let general_csv =
-  CsvReader.read_csv ~date:"   the date   " ~open_price:"Open" ~high_price:"hi"
+  CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
     ~low_price:"Low" ~close_price:" Close" ~adj_price:"adj" ~volume:"vol1234 "
     "data/test/general.csv"
 
+module DateConverterTester = struct
+  let test_convert date =
+    "date conversion test" >:: fun _ ->
+    assert_equal
+      ~printer:(fun s -> s)
+      date
+      (DateConverter.string_to_date date |> DateConverter.date_to_string)
+
+  let all_tests = [ test_convert "2018-10-01"; test_convert "12/23/2008" ]
+end
+
 module CsvReaderTester = struct
+  let date = DateConverter.string_to_date
+
   let test_size out csv =
     "size test" >:: fun _ ->
     assert_equal ~printer:string_of_int out (CsvReader.size csv)
@@ -23,7 +36,10 @@ module CsvReaderTester = struct
       assert_raises Not_found (fun _ -> CsvReader.get_row csv n)
     else
       "get row test" >:: fun _ ->
-      assert_equal out (CsvReader.get_row csv n |> CsvReader.string_of_row)
+      assert_equal
+        ~printer:(fun s -> s)
+        out
+        (CsvReader.get_row csv n |> CsvReader.string_of_row)
 
   let test_row_getter ~p ~f ~fname ~idx out csv =
     let size = CsvReader.size csv in
@@ -59,41 +75,34 @@ module CsvReaderTester = struct
 
   let size_tests =
     [
-      test_size 9 general_csv;
+      test_size 8 general_csv;
       test_size 0 (CsvReader.head general_csv 0);
       test_size 3 (CsvReader.head general_csv 3);
-      test_size 9 (CsvReader.head general_csv 9);
+      test_size 8 (CsvReader.head general_csv 9);
     ]
 
   let get_row_tests =
     [
       test_get_row ~n:(-1) "" general_csv;
       test_get_row ~n:0
-        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993, Low \
-         Price: 290.980011, Close Price: 291.730011, Adj Price: N/A, Volume: \
-         62078900"
-        general_csv;
-      test_get_row ~n:9
-        "Date: 2018-10-11, Open Price: N/A, High Price: 278.899994, Low Price: \
-         270.359985, Close Price: 272.170013, Adj Price: 250.377533, Volume: \
-         274840500"
-        general_csv;
+        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993,  Low\n\
+        \   Price: 290.980011, Close Price: 291.730011, Adj Price: N/A,  Volume:\n\
+        \   62078900." general_csv;
+      test_get_row ~n:7
+        "Date: 2018-10-11, Open Price:\n\
+        \   N/A, High Price: 278.899994, Low  Price: 270.359985, Close Price:\n\
+        \   272.170013, Adj Price: 250.377533,  Volume: 274840500." general_csv;
       test_get_row ~n:100 "" general_csv;
     ]
 
   let get_date_tests =
     [
-      test_row_getter
-        ~p:(string_of_opt (fun s -> s))
-        ~f:CsvReader.get_date ~fname:"date getter" ~idx:0 (Some "2018-10-01")
-        general_csv;
-      test_row_getter
-        ~p:(string_of_opt (fun s -> s))
-        ~f:CsvReader.get_date ~fname:"date getter" ~idx:4 (Some "2018-10-05")
-        general_csv;
-      test_row_getter
-        ~p:(string_of_opt (fun s -> s))
-        ~f:CsvReader.get_date ~fname:"date getter" ~idx:5 None general_csv;
+      test_row_getter ~p:string_of_float ~f:CsvReader.get_date
+        ~fname:"date getter" ~idx:0 (date "2018-10-01") general_csv;
+      test_row_getter ~p:string_of_float ~f:CsvReader.get_date
+        ~fname:"date getter" ~idx:4 (date "2018-10-05") general_csv;
+      test_row_getter ~p:string_of_float ~f:CsvReader.get_date
+        ~fname:"date getter" ~idx:5 (date "2018-10-06") general_csv;
     ]
 
   let get_open_price_tests =
@@ -147,11 +156,11 @@ module CsvReaderTester = struct
   let get_volume_tests =
     [
       test_row_getter
-        ~p:(string_of_opt string_of_int)
-        ~f:CsvReader.get_volume ~fname:"volume getter" ~idx:0 (Some 62078900)
+        ~p:(string_of_opt string_of_float)
+        ~f:CsvReader.get_volume ~fname:"volume getter" ~idx:0 (Some 62078900.)
         general_csv;
       test_row_getter
-        ~p:(string_of_opt string_of_int)
+        ~p:(string_of_opt string_of_float)
         ~f:CsvReader.get_volume ~fname:"volume getter" ~idx:2 None general_csv;
     ]
 
@@ -169,17 +178,16 @@ module CsvReaderTester = struct
   let col_getter_tests =
     List.flatten
       [
-        test_col_getter
-          ~p:(string_of_opt (fun s -> s))
-          ~f:CsvReader.get_dates ~fname:"dates col getter"
-          ~fst:(Some "2018-10-01") ~lst:(Some "2018-10-11") general_csv;
+        test_col_getter ~p:string_of_float ~f:CsvReader.get_dates
+          ~fname:"dates col getter" ~fst:(date "2018-10-01")
+          ~lst:(date "2018-10-11") general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
           ~f:CsvReader.get_open_prices ~fname:"open prices col getter"
           ~fst:(Some 292.109985) ~lst:None general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
-          ~f:CsvReader.get_high_prices ~fname:"high prices col getter"
+          ~f:CsvReader.get_high_prices ~fname:"high\n   prices col getter"
           ~fst:(Some 292.929993) ~lst:(Some 278.899994) general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
@@ -194,9 +202,9 @@ module CsvReaderTester = struct
           ~f:CsvReader.get_adj_prices ~fname:"adj prices col getter" ~fst:None
           ~lst:(Some 250.377533) general_csv;
         test_col_getter
-          ~p:(string_of_opt string_of_int)
+          ~p:(string_of_opt string_of_float)
           ~f:CsvReader.get_volumes ~fname:"volumes col getter"
-          ~fst:(Some 62078900) ~lst:(Some 274840500) general_csv;
+          ~fst:(Some 62078900.) ~lst:(Some 274840500.) general_csv;
       ]
 
   let head_tests =
@@ -263,7 +271,6 @@ module MovingAverageTester = struct
           Some 287.820;
           Some 287.820;
           None;
-          Some 278.300;
           Some 272.170;
         ]
         general_csv;
@@ -274,14 +281,13 @@ module MovingAverageTester = struct
           Some 289.66;
           Some 288.36;
           Some 287.82;
-          Some 283.06;
-          Some 275.235;
+          Some 279.995;
         ]
         general_csv;
       test_avg ~w_size:5 ~fname:"SMA"
-        [ Some 290.454; Some 289.672; Some 289.2; Some 285.845; Some 281.528 ]
+        [ Some 290.454; Some 289.672; Some 289.2; Some 284.313 ]
         general_csv;
-      test_avg ~w_size:25 ~fname:"SMA" [ Some 286.32 ] general_csv;
+      test_avg ~w_size:25 ~fname:"SMA" [ Some 287.466 ] general_csv;
     ]
 
   let ema_tests =
@@ -297,21 +303,13 @@ module MovingAverageTester = struct
           Some 287.820;
           Some 287.820;
           None;
-          Some 278.300;
-          Some 272.170;
+          Some 272.17;
         ]
         general_csv;
       test_avg ~w_size:4 ~fname:"EMA"
-        [
-          Some 290.444;
-          Some 289.394;
-          Some 288.764;
-          None;
-          Some 284.579;
-          Some 279.615;
-        ]
+        [ Some 290.444; Some 289.394; Some 288.764; None; Some 282.127 ]
         general_csv;
-      test_avg ~w_size:12 ~fname:"EMA" [ Some 283.49 ] general_csv;
+      test_avg ~w_size:12 ~fname:"EMA" [ Some 284.067 ] general_csv;
     ]
 
   let wma_tests =
@@ -327,7 +325,6 @@ module MovingAverageTester = struct
           Some 287.820;
           Some 287.820;
           None;
-          Some 278.300;
           Some 272.170;
         ]
         general_csv;
@@ -338,11 +335,10 @@ module MovingAverageTester = struct
           Some 290.31;
           Some 288.63;
           Some 287.82;
-          Some 284.647;
-          Some 276.257;
+          Some 282.603;
         ]
         general_csv;
-      test_avg ~w_size:20 ~fname:"WMA" [ Some 289.328 ] general_csv;
+      test_avg ~w_size:20 ~fname:"WMA" [ Some 289.968 ] general_csv;
     ]
 
   let tma_tests =
@@ -358,25 +354,17 @@ module MovingAverageTester = struct
           Some 287.820;
           Some 287.820;
           None;
-          Some 278.300;
           Some 272.170;
         ]
         general_csv;
       test_avg ~w_size:4 ~fname:"TMA"
-        [
-          Some 291.288;
-          Some 290.283;
-          Some 289.01;
-          Some 288.09;
-          Some 285.44;
-          Some 279.147;
-        ]
+        [ Some 291.288; Some 290.283; Some 289.01; Some 288.09; Some 283.908 ]
         general_csv;
       test_avg ~w_size:5 ~fname:"TMA"
-        [ Some 290.746; Some 289.642; Some 288.613; Some 286.413; Some 282.038 ]
+        [ Some 290.746; Some 289.642; Some 288.613; Some 285.392 ]
         general_csv;
-      test_avg ~w_size:25 ~fname:"TMA" [ Some 286.320 ] general_csv;
-      test_avg ~w_size:26 ~fname:"TMA" [ Some 286.320 ] general_csv;
+      test_avg ~w_size:25 ~fname:"TMA" [ Some 287.466 ] general_csv;
+      test_avg ~w_size:26 ~fname:"TMA" [ Some 287.466 ] general_csv;
     ]
 
   let vama_tests =
@@ -392,7 +380,6 @@ module MovingAverageTester = struct
           None;
           Some 287.820;
           None;
-          Some 278.300;
           Some 272.170;
         ]
         general_csv;
@@ -403,19 +390,23 @@ module MovingAverageTester = struct
           Some 289.44;
           Some 288.727;
           Some 287.82;
-          Some 281.062;
-          Some 274.859;
+          Some 275.957;
         ]
         general_csv;
-      test_avg ~w_size:9 ~fname:"VAMA" [ Some 280.622 ] general_csv;
+      test_avg ~w_size:9 ~fname:"VAMA" [ Some 281.477 ] general_csv;
     ]
 
   let all_tests =
     List.flatten [ sma_tests; ema_tests; wma_tests; tma_tests; vama_tests ]
 end
 
-let csv_tests =
-  List.flatten [ CsvReaderTester.all_tests; MovingAverageTester.all_tests ]
+let all_tests =
+  List.flatten
+    [
+      DateConverterTester.all_tests;
+      CsvReaderTester.all_tests;
+      MovingAverageTester.all_tests;
+    ]
 
-let suite = "main test suite" >::: List.flatten [ csv_tests ]
+let suite = "main test suite" >::: all_tests
 let _ = run_test_tt_main suite
