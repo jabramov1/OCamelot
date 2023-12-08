@@ -14,6 +14,7 @@ module type CsvReaderType = sig
     close_price:string ->
     adj_price:string ->
     volume:string ->
+    ?date_type:string ->
     ?separator:char ->
     string ->
     t
@@ -72,7 +73,7 @@ module type CsvReaderType = sig
 
       @raise [Not_found] if index is out of bounds. *)
 
-  val get_date : row -> string
+  val get_date : row -> float
   (** [get_date r] returns the date for the given row [r]. *)
 
   val get_open_price : row -> float option
@@ -93,7 +94,7 @@ module type CsvReaderType = sig
   val get_volume : row -> float option
   (** [get_volume row] returns the date for the given [row]. *)
 
-  val get_dates : t -> string list
+  val get_dates : t -> float list
   (** [get_dates d] returns the dates column in the CSV data representation [d]. *)
 
   val get_open_prices : t -> float option list

@@ -12,17 +12,34 @@ let general_csv =
     "data/test/general.csv"
 
 module DateConverterTester = struct
-  let test_convert date =
-    "date\n   conversion test" >:: fun _ ->
+  let test_convert ~date_type out date =
+    "date conversion test" >:: fun _ ->
     assert_equal
       ~printer:(fun s -> s)
-      date
-      (DateConverter.string_to_date date |> DateConverter.date_to_string)
+      out
+      (DateConverter.string_to_date ~date_type date
+      |> DateConverter.date_to_string)
 
-  let all_tests = [ test_convert "2018-10-01"; test_convert "12/23/2008" ]
+  (* let test_convert_raises ~date_type date = "date conversion raises test" >::
+     fun _ -> assert_raises (DateConverter.InvalidDate "Invalid date. Components
+     are not of proper length. ") (fun _ -> DateConverter.string_to_date
+     ~date_type date) *)
+
+  let all_tests =
+    [
+      test_convert ~date_type:"YYYY-MM-DD" "2018-10-01" "2018-10-01";
+      test_convert ~date_type:"YYYY/MM/DD" "2020-12-12" "2020/12/12";
+      test_convert ~date_type:"MM-DD-YYYY" "2003-09-10" "09-10-2003";
+      test_convert ~date_type:"MM/DD/YYYY" "1923-04-15" "04/15/1923";
+      test_convert ~date_type:"DD-MM-YYYY" "1972-04-02" "02/04/1972";
+      (* test_convert_raises ~date_type:"YYYY/MM/DD" " 2019 / 12 / 1"; *)
+    ]
 end
 
 module CsvReaderTester = struct
+  let date = DateConverter.string_to_date ~date_type:"YYYY-MM-DD"
+  let date_to_string = DateConverter.date_to_string
+
   let test_size out csv =
     "size test" >:: fun _ ->
     assert_equal ~printer:string_of_int out (CsvReader.size csv)
@@ -83,30 +100,26 @@ module CsvReaderTester = struct
     [
       test_get_row ~n:(-1) "" general_csv;
       test_get_row ~n:0
-        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993, Low\n\
-        \ Price: 290.980011, Close Price: 291.730011, Adj Price: N/A, Volume:\n\
-        \ 62078900." general_csv;
+        "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993, Low \
+         Price: 290.980011, Close Price: 291.730011, Adj Price: N/A, Volume: \
+         62078900."
+        general_csv;
       test_get_row ~n:7
-        "Date: 2018-10-11, Open Price:\n\
-        \ N/A, High Price: 278.899994, Low Price: 270.359985, Close Price:\n\
-        \ 272.170013, Adj Price: 250.377533, Volume: 274840500." general_csv;
+        "Date: 2018-10-11, Open Price: N/A, High Price: 278.899994, Low Price: \
+         270.359985, Close Price: 272.170013, Adj Price: 250.377533, Volume: \
+         274840500."
+        general_csv;
       test_get_row ~n:100 "" general_csv;
     ]
 
   let get_date_tests =
     [
-      test_row_getter
-        ~p:(fun s -> s)
-        ~f:CsvReader.get_date ~fname:"date getter" ~idx:0 "2018-10-01"
-        general_csv;
-      test_row_getter
-        ~p:(fun s -> s)
-        ~f:CsvReader.get_date ~fname:"date getter" ~idx:4 "2018-10-05"
-        general_csv;
-      test_row_getter
-        ~p:(fun s -> s)
-        ~f:CsvReader.get_date ~fname:"date getter" ~idx:5 "2018-10-06"
-        general_csv;
+      test_row_getter ~p:date_to_string ~f:CsvReader.get_date
+        ~fname:"date getter" ~idx:0 (date "2018-10-01") general_csv;
+      test_row_getter ~p:date_to_string ~f:CsvReader.get_date
+        ~fname:"date getter" ~idx:4 (date "2018-10-05") general_csv;
+      test_row_getter ~p:date_to_string ~f:CsvReader.get_date
+        ~fname:"date getter" ~idx:5 (date "2018-10-06") general_csv;
     ]
 
   let get_open_price_tests =
@@ -182,10 +195,9 @@ module CsvReaderTester = struct
   let col_getter_tests =
     List.flatten
       [
-        test_col_getter
-          ~p:(fun s -> s)
-          ~f:CsvReader.get_dates ~fname:"dates col getter" ~fst:"2018-10-01"
-          ~lst:"2018-10-11" general_csv;
+        test_col_getter ~p:date_to_string ~f:CsvReader.get_dates
+          ~fname:"dates col getter" ~fst:(date "2018-10-01")
+          ~lst:(date "2018-10-11") general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
           ~f:CsvReader.get_open_prices ~fname:"open prices col getter"

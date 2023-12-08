@@ -12,6 +12,7 @@ module type CsvReaderType = sig
     close_price:string ->
     adj_price:string ->
     volume:string ->
+    ?date_type:string ->
     ?separator:char ->
     string ->
     t
@@ -110,16 +111,10 @@ module CsvReader : CsvReaderType = struct
         | index -> index)
       keys
 
-  let float_opt_of_string s =
-    try
-      print_endline s;
-      Some (float_of_string s)
-    with _ ->
-      print_endline "ERROR";
-      None
+  let float_opt_of_string s = try Some (float_of_string s) with _ -> None
 
   let read_csv ~date ~open_price ~high_price ~low_price ~close_price ~adj_price
-      ~volume ?(separator = ',') filename : t =
+      ~volume ?(date_type = "YYYY-MM-DD") ?(separator = ',') filename : t =
     let csv = Csv.load filename ~separator in
     let keys =
       [
@@ -135,7 +130,8 @@ module CsvReader : CsvReaderType = struct
       {
         date =
           List.nth selected_indices 0
-          |> List.nth row |> DateConverter.string_to_date;
+          |> List.nth row
+          |> DateConverter.string_to_date ~date_type;
         open_price =
           List.nth selected_indices 1 |> List.nth row |> float_opt_of_string;
         high_price =
@@ -174,10 +170,11 @@ module CsvReader : CsvReaderType = struct
     match value with
     | Some v when name = "Volume" ->
         Printf.sprintf "%s: %s" name (string_of_float v)
+    | None when name = "Volume" -> Printf.sprintf "Volume: N/A"
     | Some v when name = "Date" ->
         Printf.sprintf "%s: %s, " name (DateConverter.date_to_string v)
     | Some v -> Printf.sprintf "%s: %s, " name (string_of_float v)
-    | None -> ""
+    | None -> Printf.sprintf "%s: N/A, " name
 
   let string_of_row row =
     let fields =
