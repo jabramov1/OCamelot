@@ -20,19 +20,27 @@ module DateConverterTester = struct
       (DateConverter.string_to_date ~date_type date
       |> DateConverter.date_to_string)
 
-  (* let test_convert_raises ~date_type date = "date conversion raises test" >::
-     fun _ -> assert_raises (DateConverter.InvalidDate "Invalid date. Components
-     are not of proper length. ") (fun _ -> DateConverter.string_to_date
-     ~date_type date) *)
+  let test_convert_raises ~date_type ~err_str date =
+    "date conversion raises test" >:: fun _ ->
+    assert_raises (DateConverter.InvalidDate err_str) (fun _ ->
+        DateConverter.string_to_date ~date_type date)
 
   let all_tests =
     [
       test_convert ~date_type:"YYYY-MM-DD" "2018-10-01" "2018-10-01";
       test_convert ~date_type:"YYYY/MM/DD" "2020-12-12" "2020/12/12";
       test_convert ~date_type:"MM-DD-YYYY" "2003-09-10" "09-10-2003";
-      test_convert ~date_type:"MM/DD/YYYY" "1923-04-15" "04/15/1923";
-      test_convert ~date_type:"DD-MM-YYYY" "1972-04-02" "02/04/1972";
-      (* test_convert_raises ~date_type:"YYYY/MM/DD" " 2019 / 12 / 1"; *)
+      test_convert ~date_type:"MM/DD/YYYY" "1923-04-15" "04/ 15/    1923";
+      test_convert ~date_type:"DD-MM-YYYY" "1972-04-02" "2 - 4 - 1972 ";
+      test_convert ~date_type:"DD/MM/YYYY" "2024-09-12" "12/09/2024";
+      test_convert ~date_type:"YYYY-DD-MM" "2023-01-03" "2023-03-1";
+      test_convert ~date_type:"YYYY/DD/MM" "1923-12-12" "1923/12/12";
+      test_convert ~date_type:"MMM DD, YYYY" "2004-12-04" "DEC 4, 2004";
+      test_convert ~date_type:"MMM DD, YYYY" "2004-01-04" "jaN 04 , 2004 ";
+      test_convert_raises ~date_type:"YYYY-MM-DD"
+        ~err_str:"Invalid date: 20180-10-01T00:00:00Z" "20180-10-01";
+      test_convert_raises ~date_type:"MMM DD, YYYY"
+        ~err_str:"Invalid date input." "dece 4, 2023";
     ]
 end
 

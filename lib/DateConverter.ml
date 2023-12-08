@@ -9,10 +9,12 @@ module DateConverter : DateConverterType = struct
   exception InvalidDate of string
 
   let format_day_month n =
-    if String.length n = 1 then "0" ^ n
-    else if String.length n = 2 then n
-    else
-      raise (InvalidDate "Invalid date. Components are not of proper length.")
+    let len = String.length n in
+    match len with
+    | 1 -> "0" ^ n
+    | 2 -> n
+    | _ ->
+        raise (InvalidDate "Invalid date. Component is not of proper length.")
 
   let month_to_number month =
     let month = String.lowercase_ascii month |> String.trim in
@@ -69,14 +71,12 @@ module DateConverter : DateConverterType = struct
           (List.nth split_slash 1 |> format_day_month)
           (List.nth split_slash 0 |> format_day_month)
     | "YYYY-DD-MM" ->
-        reconstruct
-          (List.nth split_dash 0 |> format_day_month)
-          (List.nth split_dash 2)
+        reconstruct (List.nth split_dash 0)
+          (List.nth split_dash 2 |> format_day_month)
           (List.nth split_dash 1 |> format_day_month)
     | "YYYY/DD/MM" ->
-        reconstruct
-          (List.nth split_slash 0 |> format_day_month)
-          (List.nth split_slash 2)
+        reconstruct (List.nth split_slash 0)
+          (List.nth split_slash 2 |> format_day_month)
           (List.nth split_slash 1 |> format_day_month)
     | "MMM DD, YYYY" ->
         let split = split_date ' ' (List.hd split_comma) in
