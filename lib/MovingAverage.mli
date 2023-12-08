@@ -6,8 +6,7 @@ module type MovingAverageType = sig
       the closing prices in a CSV data representation [data] over a window size
       [n].
 
-      @see https://www.fmlabs.com/reference/default.htm SMA formula reference 
-      (select from dropdown).
+      @see https://www.fmlabs.com/reference/default.htm
  
       @param data The CSV data representation.
 
@@ -29,8 +28,7 @@ module type MovingAverageType = sig
       for the closing prices in a CSV data representation [data] over a window
       size [n].
 
-      @see https://www.fmlabs.com/reference/default.htm EMA formula reference 
-      (select from dropdown).
+      @see https://www.fmlabs.com/reference/default.htm
 
       @param data The CSV data representation.
 
@@ -52,8 +50,7 @@ module type MovingAverageType = sig
       for the closing prices in a CSV data representation [data] over a window
       size [n].
 
-      @see https://www.fmlabs.com/reference/default.htm WMA formula reference 
-      (select from dropdown).
+      @see https://www.fmlabs.com/reference/default.htm
 
       @param data The CSV data representation.
 
@@ -75,8 +72,7 @@ module type MovingAverageType = sig
       (TMA) for the closing prices in a CSV data representation [data] over a
       window size [n].
 
-      @see https://www.fmlabs.com/reference/default.htm TMA formula reference 
-      (select from dropdown). 
+      @see https://www.fmlabs.com/reference/default.htm
 
       @param data The CSV data representation.
 
@@ -98,8 +94,7 @@ module type MovingAverageType = sig
       (VAMA) for the closing prices in a CSV data representation [data] over a
       window size [n].
 
-      @see https://www.fmlabs.com/reference/default.htm VAMA formula reference 
-      (select from dropdown).
+      @see https://www.fmlabs.com/reference/default.htm
 
       @param data The CSV data representation.
 
