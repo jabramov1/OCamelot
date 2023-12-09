@@ -51,4 +51,4 @@ let demo data =
   demo_backtest data;
   demo_graph data
 
-let _ = demo (List.nth data_list 2)
+let _ = demo (List.nth data_list 0)

@@ -19,7 +19,7 @@ module DateConverterTester = struct
       |> DateConverter.date_to_string)
 
   let test_convert_raises ~date_type ~err_str date =
-    "date conversion raises\n     test" >:: fun _ ->
+    "date conversion raises test" >:: fun _ ->
     assert_raises (DateConverter.InvalidDate err_str) (fun _ ->
         DateConverter.string_to_date ~date_type date)
 

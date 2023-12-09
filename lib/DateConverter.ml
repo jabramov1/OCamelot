@@ -79,9 +79,7 @@ let parse_date ~date_type date =
       let new_date = new_date |> reconstruct in
       if String.length year = 2 then "20" ^ new_date else new_date
   | "MM/DD/YYYY" | "MM/DD/YY" ->
-      let _ = List.map (fun x -> print_endline x) split_slash in
       let new_date = reorder_list split_slash [ 2; 0; 1 ] in
-      let _ = List.map (fun x -> print_endline x) new_date in
       let year = List.hd new_date in
       let new_date = new_date |> reconstruct in
       if String.length year = 2 then "20" ^ new_date else new_date
