@@ -49,11 +49,13 @@ val read_csv :
       The title of the column (within the header) that stores the volumes.
       Surrounding whitespace is ignored.
 
-    @param date_type The format of the dates in the dates column.
+    @param date_type
+      An optional parameter representing the format of the dates in the dates
+      column.
 
     @param separator
-      The character of the separator between entries in the CSV file. The
-      default is [',']. *)
+      An optional parameter representing the character of the separator between
+      entries in the CSV file. The default is [',']. *)
 
 val size : t -> int
 (** [size d] returns the number of rows stored in the CSV data representation

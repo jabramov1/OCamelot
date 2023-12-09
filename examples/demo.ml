@@ -1,23 +1,23 @@
 open Ocamelot
 open Ocamelot.BackTester
 
-let data_1 =
-  CsvReader.read_csv "./data/SPY.csv" ~date:"Date" ~open_price:"Open"
-    ~high_price:"High" ~low_price:"Low" ~close_price:"Close" ~volume:"Volume"
+let clean_csv =
+  CsvReader.read_csv ~date:"Date" ~open_price:"open" ~high_price:"high"
+    ~low_price:"low" ~close_price:"close" ~volume:"volume" ~date_type:"MM/DD/YY"
+    "./data/StockData.csv"
 
-let data_2 =
-  CsvReader.read_csv "./data/StockData.csv" ~date:"Date" ~open_price:"open"
-    ~high_price:"high" ~low_price:"low" ~close_price:"close" ~volume:"volume"
-    ~date_type:"MM/DD/YY"
+let spy_csv =
+  CsvReader.read_csv ~date:"Date" ~open_price:"Open" ~high_price:"High"
+    ~low_price:"Low" ~close_price:"Close" ~volume:"Volume" "./data/SPY.csv"
 
-let messy_data =
+let messy_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
-    ~low_price:"Low" ~close_price:"\n       Close" ~volume:"vol1234 "
+    ~low_price:"Low" ~close_price:"Close" ~volume:"vol1234 "
     "./data/test/general.csv"
 
-let data_list = [ data_1; data_2; messy_data ]
+let data_list = [ clean_csv; spy_csv; messy_csv ]
 
-let demo data =
+let demo_csv data =
   let size = CsvReader.size data in
   print_endline (string_of_int size);
 
@@ -32,15 +32,22 @@ let demo data =
 
   let tail_size = 4 in
   print_endline "Last 4 elements:";
-  CsvReader.print_data (CsvReader.tail data tail_size);
+  CsvReader.print_data (CsvReader.tail data tail_size)
 
+let demo_backtest data =
   let strategy = Strategy.create_strategy ~moving_average_window:5 in
   let result = backtest strategy data in
   Printf.printf "Backtest Result:\n";
   Printf.printf "Number of Trades: %d\n" (List.length result.trades);
   Printf.printf "Annualized Returns: %.2f%%\n"
     (result.annualized_returns *. 100.0);
-  Printf.printf "Sharpe Ratio: %.4f\n" result.sharpe_ratio;
-  Grapher.graph data
+  Printf.printf "Sharpe Ratio: %.4f\n" result.sharpe_ratio
 
-let _ = demo (List.nth data_list 0)
+let demo_graph data = Grapher.graph ~m_averages:[ (Grapher.Triangular, 3) ] data
+
+let demo data =
+  demo_csv data;
+  demo_backtest data;
+  demo_graph data
+
+let _ = demo (List.nth data_list 2)
