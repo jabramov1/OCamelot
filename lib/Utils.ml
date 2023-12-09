@@ -1,3 +1,11 @@
+(* let rec string_to_float s index len result = if index = len then result else
+   let c = Char.code s.[index] in if c >= 48 && c <= 57 then (* ASCII code for
+   numbers 0-9 *) let numeric_val = float_of_int (c - 48) in let new_result =
+   (result *. 10.) +. numeric_val in string_to_float s (index + 1) len
+   new_result else invalid_arg "Non-numeric character in string" *)
+
+(* let float_val = string_to_float clean_str 0 (String.length clean_str) 0.0 *)
+
 let string_of_opt f s =
   Option.map (fun x -> "Some " ^ f x) s |> Option.value ~default:"None"
 

@@ -10,7 +10,6 @@ module type CsvReaderType = sig
     high_price:string ->
     low_price:string ->
     close_price:string ->
-    adj_price:string ->
     volume:string ->
     ?date_type:string ->
     ?separator:char ->
@@ -26,14 +25,12 @@ module type CsvReaderType = sig
   val get_high_price : row -> float option
   val get_low_price : row -> float option
   val get_closing_price : row -> float option
-  val get_adj_price : row -> float option
   val get_volume : row -> float option
   val get_dates : t -> float list
   val get_open_prices : t -> float option list
   val get_high_prices : t -> float option list
   val get_low_prices : t -> float option list
   val get_closing_prices : t -> float option list
-  val get_adj_prices : t -> float option list
   val get_volumes : t -> float option list
   val head : t -> int -> row list
   val tail : t -> int -> row list
@@ -50,7 +47,6 @@ module CsvReader : CsvReaderType = struct
     high_price : float option;
     low_price : float option;
     close_price : float option;
-    adj_price : float option;
     volume : float option;
   }
 
@@ -60,14 +56,13 @@ module CsvReader : CsvReaderType = struct
 
   let make_row lst =
     match lst with
-    | date :: open_p :: high_p :: low_p :: close_p :: adj_p :: volume :: _ ->
+    | date :: open_p :: high_p :: low_p :: close_p :: volume :: _ ->
         {
           date = float_of_string date;
           open_price = Some (float_of_string open_p);
           high_price = Some (float_of_string high_p);
           low_price = Some (float_of_string low_p);
           close_price = Some (float_of_string close_p);
-          adj_price = Some (float_of_string adj_p);
           volume = Some (float_of_string volume);
         }
     | _ -> raise (Invalid_argument "Invalid row format")
@@ -82,14 +77,12 @@ module CsvReader : CsvReaderType = struct
   let get_high_price row = row.high_price
   let get_low_price row = row.low_price
   let get_closing_price row = row.close_price
-  let get_adj_price row = row.adj_price
   let get_volume row = row.volume
   let get_dates data = List.map (fun row -> row.date) data
   let get_open_prices data = List.map (fun row -> row.open_price) data
   let get_high_prices data = List.map (fun row -> row.high_price) data
   let get_low_prices data = List.map (fun row -> row.low_price) data
   let get_closing_prices data = List.map (fun row -> row.close_price) data
-  let get_adj_prices data = List.map (fun row -> row.adj_price) data
   let get_volumes data = List.map (fun row -> row.volume) data
 
   let index_of (elem : string) (lst : string list) : int =
@@ -103,7 +96,6 @@ module CsvReader : CsvReaderType = struct
   let filter_header header keys =
     List.map
       (fun col_name ->
-        print_endline col_name;
         match index_of col_name header with
         | -1 ->
             raise
@@ -113,14 +105,13 @@ module CsvReader : CsvReaderType = struct
 
   let float_opt_of_string s = try Some (float_of_string s) with _ -> None
 
-  let read_csv ~date ~open_price ~high_price ~low_price ~close_price ~adj_price
-      ~volume ?(date_type = "YYYY-MM-DD") ?(separator = ',') filename : t =
+  let read_csv ~date ~open_price ~high_price ~low_price ~close_price ~volume
+      ?(date_type = "YYYY-MM-DD") ?(separator = ',') filename : t =
     let csv = Csv.load filename ~separator in
     let keys =
-      [
-        date; open_price; high_price; low_price; close_price; adj_price; volume;
-      ]
+      [ date; open_price; high_price; low_price; close_price; volume ]
       |> List.map (fun s -> String.trim s)
+      |> List.map (fun s -> String.map (fun c -> if c = ',' then ' ' else c) s)
     in
     let header = List.hd csv in
     let selected_indices = filter_header header keys in
@@ -140,10 +131,8 @@ module CsvReader : CsvReaderType = struct
           List.nth selected_indices 3 |> List.nth row |> float_opt_of_string;
         close_price =
           List.nth selected_indices 4 |> List.nth row |> float_opt_of_string;
-        adj_price =
-          List.nth selected_indices 5 |> List.nth row |> float_opt_of_string;
         volume =
-          List.nth selected_indices 6 |> List.nth row |> float_opt_of_string;
+          List.nth selected_indices 5 |> List.nth row |> float_opt_of_string;
       }
     in
     List.fold_left
@@ -184,7 +173,6 @@ module CsvReader : CsvReaderType = struct
         ("High Price", row.high_price);
         ("Low Price", row.low_price);
         ("Close Price", row.close_price);
-        ("Adj Price", row.adj_price);
         ("Volume", row.volume);
       ]
     in
@@ -199,29 +187,3 @@ module CsvReader : CsvReaderType = struct
 
   let print_data data = string_of_data data |> print_endline
 end
-
-module Main = struct
-  open CsvReader
-
-  let main () =
-    let filename = "data/test/clean.csv" in
-
-    let data =
-      read_csv ~date:"Date" ~open_price:"Open" ~high_price:"High"
-        ~low_price:"Low" ~close_price:"Close" ~adj_price:"Adj Close"
-        ~volume:"Volume" filename
-    in
-
-    print_data data;
-
-    let row_index = 0 in
-    let specific_row = get_row data row_index in
-    print_row specific_row;
-
-    let head_size = 3 in
-    let tail_size = 0 in
-    print_data (head data head_size);
-    print_data (tail data tail_size)
-end
-
-let () = Main.main ()

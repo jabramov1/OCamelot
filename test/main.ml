@@ -26,12 +26,15 @@ module DateConverterTester = struct
   let all_tests =
     [
       test_convert ~date_type:"YYYY-MM-DD" "2018-10-01" "2018-10-01";
+      test_convert ~date_type:"YY-MM-DD" "2018-10-01" "18-10-01";
       test_convert ~date_type:"YYYY/MM/DD" "2020-12-12" "2020/12/12";
+      test_convert ~date_type:"YY/MM/DD" "2020-12-12" "20/12/12";
       test_convert ~date_type:"MM-DD-YYYY" "2003-09-10" "09-10-2003";
-      test_convert ~date_type:"MM/DD/YYYY" "1923-04-15" "04/15/1923";
+      test_convert ~date_type:"MM/DD/YYYY" "1923-09-26" "9/26/1923 16:00";
+      test_convert ~date_type:"MM/DD/YY" "2023-09-20" "9/20/23 16:00";
       test_convert ~date_type:"DD-MM-YYYY" "1972-04-02" "2-4-1972 ";
       test_convert ~date_type:"DD/MM/YYYY" "2024-09-12" "12/09/2024";
-      test_convert ~date_type:"YYYY-DD-MM" "2023-01-03" "2023-03-1";
+      test_convert ~date_type:"YYYY-DD-MM" "2023-01-03" "2023-03-1 4:00";
       test_convert ~date_type:"YYYY/DD/MM" "1923-12-12" "1923/12/12";
       test_convert ~date_type:"MMM DD, YYYY" "2004-12-04" "DEC 4, 2004";
       test_convert ~date_type:"MMM DD, YYYY" "2004-01-04" "jaN 04, 2004";

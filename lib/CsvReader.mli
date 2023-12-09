@@ -12,7 +12,6 @@ module type CsvReaderType = sig
     high_price:string ->
     low_price:string ->
     close_price:string ->
-    adj_price:string ->
     volume:string ->
     ?date_type:string ->
     ?separator:char ->
@@ -88,9 +87,6 @@ module type CsvReaderType = sig
   val get_closing_price : row -> float option
   (** [get_closing_price r] returns the closing price for the given row [r]. *)
 
-  val get_adj_price : row -> float option
-  (** [get_adj_price r] returns the adjusted price for the given row [r]. *)
-
   val get_volume : row -> float option
   (** [get_volume row] returns the date for the given [row]. *)
 
@@ -111,10 +107,6 @@ module type CsvReaderType = sig
 
   val get_closing_prices : t -> float option list
   (** [get_closing_prices d] returns the closing prices column in the CSV data
-      representation [d]. *)
-
-  val get_adj_prices : t -> float option list
-  (** [get_adj_prices d] returns the adjusted prices column in the CSV data
       representation [d]. *)
 
   val get_volumes : t -> float option list

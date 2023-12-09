@@ -109,7 +109,7 @@ module Grapher : GrapherType = struct
         print_endline "Enter index of MA to remove:";
         let index = read_int () in
         let new_m_averages =
-          List.mapi (fun i ma -> (i, ma)) m_averages
+          List.mapi (fun i ma -> (i - 1, ma)) m_averages
           |> List.filter (fun (i, _) -> i <> index)
           |> List.map snd
         in

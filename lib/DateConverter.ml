@@ -48,16 +48,27 @@ module DateConverter : DateConverterType = struct
   let parse_date ~date_type date =
     let split_dash = split_date '-' date in
     let split_slash = split_date '/' date in
+
     match date_type with
     | "YYYY-MM-DD" -> date
-    | "YYYY/MM/DD" ->
-        reconstruct (List.nth split_slash 0)
-          (List.nth split_slash 1 |> format_day_month)
-          (List.nth split_slash 2 |> format_day_month)
+    | "YY-MM-DD" -> "20" ^ date
+    | "YYYY/MM/DD" | "YY/MM/DD" ->
+        let year = List.nth split_slash 0 in
+        let new_date =
+          reconstruct year
+            (List.nth split_slash 1 |> format_day_month)
+            (List.nth split_slash 2 |> format_day_month)
+        in
+        if String.length year = 2 then "20" ^ new_date else new_date
     | "MM-DD-YYYY" ->
         reconstruct (List.nth split_dash 2)
           (List.nth split_dash 0 |> format_day_month)
           (List.nth split_dash 1 |> format_day_month)
+    | "MM/DD/YY" ->
+        "20"
+        ^ reconstruct (List.nth split_slash 2)
+            (List.nth split_slash 0 |> format_day_month)
+            (List.nth split_slash 1 |> format_day_month)
     | "MM/DD/YYYY" ->
         reconstruct (List.nth split_slash 2)
           (List.nth split_slash 0 |> format_day_month)
