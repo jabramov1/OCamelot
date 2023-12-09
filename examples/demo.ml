@@ -1,7 +1,4 @@
-open Ocamelot.Grapher
-open Ocamelot.CsvReader
-open Ocamelot.BackTester
-open Ocamelot.Strategy
+open Ocamelot
 
 let data_1 =
   CsvReader.read_csv "./data/SPY.csv" ~date:"Date" ~open_price:"Open"
@@ -36,8 +33,8 @@ let demo data =
   print_endline "Last 4 elements:";
   CsvReader.print_data (CsvReader.tail data tail_size);
 
-  let strategy = create_strategy ~moving_average_window:5 in
-  let result = backtest strategy data in
+  let strategy = Strategy.create_strategy ~moving_average_window:5 in
+  let result = BackTester.backtest strategy data in
   Printf.printf "Backtest Result:\n";
   Printf.printf "Number of Trades: %d\n" (List.length result.trades);
   Printf.printf "Annualized Returns: %.2f%%\n"

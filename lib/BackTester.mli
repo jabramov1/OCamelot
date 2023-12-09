@@ -1,4 +1,3 @@
-open CsvReader
 open Strategy
 
 type backtest_result = {

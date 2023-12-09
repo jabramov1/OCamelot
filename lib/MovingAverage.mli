@@ -1,8 +1,5 @@
-open CsvReader
-
-module type MovingAverageType = sig
-  val simple_moving_avg : CsvReader.t -> int -> float option list
-  (** [simple_moving_avg data n] calculates the simple moving average (SMA) for
+val simple_moving_avg : CsvReader.t -> int -> float option list
+(** [simple_moving_avg data n] calculates the simple moving average (SMA) for
       the closing prices in a CSV data representation [data] over a window size
       [n].
 
@@ -23,8 +20,8 @@ module type MovingAverageType = sig
         also be [None]. If some of the values in a window are [None], then only
         the ones equivalent to [Some x] will be included in the average. *)
 
-  val exp_moving_avg : CsvReader.t -> int -> float option list
-  (** [exp_moving_avg data n] calculates the exponential moving average (EMA)
+val exp_moving_avg : CsvReader.t -> int -> float option list
+(** [exp_moving_avg data n] calculates the exponential moving average (EMA)
       for the closing prices in a CSV data representation [data] over a window
       size [n].
 
@@ -45,8 +42,8 @@ module type MovingAverageType = sig
         also be [None]. If some of the values in a window are [None], then only
         the ones equivalent to [Some x] will be included in the average. *)
 
-  val weighted_moving_avg : CsvReader.t -> int -> float option list
-  (** [weighted_moving_avg data n] calculates the weighted moving average (WMA)
+val weighted_moving_avg : CsvReader.t -> int -> float option list
+(** [weighted_moving_avg data n] calculates the weighted moving average (WMA)
       for the closing prices in a CSV data representation [data] over a window
       size [n].
 
@@ -67,8 +64,8 @@ module type MovingAverageType = sig
         also be [None]. If some of the values in a window are [None], then only
         the ones equivalent to [Some x] will be included in the average. *)
 
-  val triangular_moving_avg : CsvReader.t -> int -> float option list
-  (** [triangular_moving_avg data n] calculates the triangular moving average
+val triangular_moving_avg : CsvReader.t -> int -> float option list
+(** [triangular_moving_avg data n] calculates the triangular moving average
       (TMA) for the closing prices in a CSV data representation [data] over a
       window size [n].
 
@@ -89,8 +86,8 @@ module type MovingAverageType = sig
         also be [None]. If some of the values in a window are [None], then only
         the ones equivalent to [Some x] will be included in the average. *)
 
-  val vol_adj_moving_avg : CsvReader.t -> int -> float option list
-  (** [vol_adj_moving_avg data n] calculates the volume-adjusted moving average
+val vol_adj_moving_avg : CsvReader.t -> int -> float option list
+(** [vol_adj_moving_avg data n] calculates the volume-adjusted moving average
       (VAMA) for the closing prices in a CSV data representation [data] over a
       window size [n].
 
@@ -110,7 +107,3 @@ module type MovingAverageType = sig
         If all the values in a window are [None], the VAMA for that window will
         also be [None]. If some of the values in a window are [None], then only
         the ones equivalent to [Some x] will be included in the average. *)
-end
-
-module MovingAverage : MovingAverageType
-(** A module that calculates various moving averages listed above. *)

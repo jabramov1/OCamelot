@@ -1,8 +1,4 @@
-module type DateConverterType = sig
-  exception InvalidDate of string
+exception InvalidDate of string
 
-  val string_to_date : date_type:string -> string -> float
-  val date_to_string : float -> string
-end
-
-module DateConverter : DateConverterType
+val string_to_date : date_type:string -> string -> float
+val date_to_string : float -> string

@@ -1,8 +1,8 @@
-open Ocamelot.CsvReader
+open Ocamelot
 open Ocamelot.Utils
-open Ocamelot.MovingAverage
-open Ocamelot.DateConverter
 open OUnit2
+
+(** TODO: make_row tests*)
 
 let general_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"

@@ -1,5 +1,3 @@
-open CsvReader
-
 (** Type representing the decision to Buy, Sell, or Hold *)
 type decision =
   | Buy

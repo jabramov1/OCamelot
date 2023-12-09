@@ -1,11 +1,10 @@
-open CsvReader
 open Strategy
 
 (* Type representing the result of a backtest *)
 type backtest_result = {
-  trades : trade list; (* List of trades executed during the backtest *)
-  annualized_returns : float; (* Annualized returns based on executed trades *)
-  sharpe_ratio : float; (* Sharpe ratio based on executed trades *)
+  trades : trade list;
+  annualized_returns : float;
+  sharpe_ratio : float;
 }
 
 (* Function to calculate annualized returns based on executed trades *)
@@ -56,29 +55,18 @@ let calculate_sharpe_ratio (trades : trade list) : float =
 
 (* Function to perform a backtest using a strategy on historical market data *)
 let backtest (strategy : t) (data : CsvReader.row list) : backtest_result =
-  (* Execute the strategy on the historical data to get a list of decisions *)
   let decisions = execute strategy data in
 
-  (* Initialize variables for tracking trades and state *)
   let rec backtest_aux rows remaining_decisions prev_trades =
     match (rows, remaining_decisions, prev_trades) with
     | [], _, trades -> { trades; annualized_returns = 0.0; sharpe_ratio = 0.0 }
     | row :: rest_rows, decision :: rest_decisions, trades ->
-        (* Update the list of trades based on the current decision and row *)
         let updated_trades = execute_trades decision row trades in
-        (* Recursively continue the backtest with the remaining rows, remaining
-           decisions, and updated trades *)
         backtest_aux rest_rows rest_decisions updated_trades
-    | _, [], trades ->
-        (* If there are no more decisions, the backtest is complete *)
-        { trades; annualized_returns = 0.0; sharpe_ratio = 0.0 }
+    | _, [], trades -> { trades; annualized_returns = 0.0; sharpe_ratio = 0.0 }
   in
 
-  (* Start the recursive backtest with the initial data, all decisions, and an
-     empty list of trades *)
   let result = backtest_aux data decisions [] in
-
-  (* Calculate and set the annualized returns and Sharpe ratio in the result *)
   let annualized_returns = calculate_annualized_returns result.trades in
   let sharpe_ratio = calculate_sharpe_ratio result.trades in
 
