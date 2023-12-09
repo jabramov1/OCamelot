@@ -20,6 +20,24 @@ module type GrapherType = sig
       @param data is the CSV data to be plotted. *)
 end
 
+let prompt_for_moving_average () =
+  print_endline
+    "Enter moving average type (Simple, Exponential, Weighted, Triangular, \
+     VolumeAdjusted):";
+  let ma_type_str = read_line () in
+  let ma_type =
+    match ma_type_str with
+    | "Simple" -> Simple
+    | "Exponential" -> Exponential
+    | "Weighted" -> Weighted
+    | "Triangular" -> Triangular
+    | "VolumeAdjusted" -> VolumeAdjusted
+    | _ -> failwith "Invalid moving average type"
+  in
+  print_endline "Enter moving average period:";
+  let period = read_int () in
+  (ma_type, period)
+
 let ma_label (ma_type, period) =
   let ma_type_label =
     match ma_type with
@@ -29,7 +47,7 @@ let ma_label (ma_type, period) =
     | Triangular -> "TMA"
     | VolumeAdjusted -> "VAMA"
   in
-  Printf.sprintf "%d-day %s" period ma_type_label
+  string_of_int period ^ "-day " ^ ma_type_label
 
 module Grapher : GrapherType = struct
   let convert_data data =
@@ -71,8 +89,39 @@ module Grapher : GrapherType = struct
   let filter_float_list (data : float option list) : float list =
     List.filter_map (fun x -> x) data
 
+  let string_of_ma_list ma_list =
+    let indexed_list = List.mapi (fun i ma -> (i + 1, ma)) ma_list in
+    List.fold_left
+      (fun acc (i, ma) -> acc ^ string_of_int i ^ " : " ^ ma_label ma ^ "\n")
+      "" indexed_list
+
+  let rec interactive_ma_input m_averages =
+    print_endline
+      ("Here are indicators: \n"
+      ^ string_of_ma_list m_averages
+      ^ "Enter command (Add, Remove, Done):");
+    match read_line () with
+    | "Add" ->
+        let ma = prompt_for_moving_average () in
+        interactive_ma_input (ma :: m_averages)
+    | "Remove" ->
+        print_endline (string_of_ma_list m_averages);
+        print_endline "Enter index of MA to remove:";
+        let index = read_int () in
+        let new_m_averages =
+          List.mapi (fun i ma -> (i, ma)) m_averages
+          |> List.filter (fun (i, _) -> i <> index)
+          |> List.map snd
+        in
+        interactive_ma_input new_m_averages
+    | "Done" -> m_averages
+    | _ ->
+        print_endline "Invalid command";
+        interactive_ma_input m_averages
+
   let graph ?(m_averages = [ (Simple, 50); (Simple, 100); (Simple, 200) ]) data
       =
+    let m_averages = interactive_ma_input m_averages in
     let plot_data = convert_data data in
     let dates = List.map fst plot_data in
     let moving_avg_data_lists =
