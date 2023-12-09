@@ -18,4 +18,4 @@ ocamlfind query timedesc
 
 ## Run Main
 To run the main program, run the following:
-dune exec test/main.ml
+dune exec examples/demo.exe

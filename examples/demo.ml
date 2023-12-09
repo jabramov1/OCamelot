@@ -1,22 +1,11 @@
 open Ocamelot
+open Ocamelot.BackTester
 
-let spy_csv =
+let csv_data =
   CsvReader.read_csv ~date:"Date" ~open_price:"Open" ~high_price:"High"
     ~low_price:"Low" ~close_price:"Close" ~volume:"Volume" "./data/SPY.csv"
 
-let stock_csv =
-  CsvReader.read_csv ~date:"Date" ~open_price:"open" ~high_price:"high"
-    ~low_price:"low" ~close_price:"close" ~volume:"volume" ~date_type:"MM/DD/YY"
-    "./data/StockData.csv"
-
-let messy_csv =
-  CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
-    ~low_price:"Low" ~close_price:"Close" ~volume:"vol1234 "
-    "./data/test/general.csv"
-
-let data_list = [ spy_csv; stock_csv; messy_csv ]
-
-let demo_csv data =
+let demo data =
   let size = CsvReader.size data in
   print_endline (string_of_int size);
 
@@ -31,24 +20,16 @@ let demo_csv data =
 
   let tail_size = 4 in
   print_endline "Last 4 elements:";
-  CsvReader.print_data (CsvReader.tail data tail_size)
+  CsvReader.print_data (CsvReader.tail data tail_size);
 
-open Ocamelot.BackTester
-
-let demo_backtest data =
   let strategy = Strategy.create_strategy ~moving_average_window:5 in
   let result = backtest strategy data in
   Printf.printf "Backtest Result:\n";
   Printf.printf "Number of Trades: %d\n" (List.length result.trades);
   Printf.printf "Annualized Returns: %.2f%%\n"
     (result.annualized_returns *. 100.0);
-  Printf.printf "Sharpe Ratio: %.4f\n" result.sharpe_ratio
+  Printf.printf "Sharpe Ratio: %.4f\n" result.sharpe_ratio;
 
-let demo_graph data = Grapher.graph ~m_averages:[ (Grapher.Triangular, 3) ] data
+  Grapher.graph ~m_averages:[ (Grapher.Triangular, 3) ] data
 
-let demo data =
-  demo_csv data;
-  demo_backtest data;
-  demo_graph data
-
-let _ = demo (List.nth data_list 0)
+let _ = demo csv_data

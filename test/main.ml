@@ -2,12 +2,14 @@ open Ocamelot
 open Ocamelot.Utils
 open OUnit2
 
-(** TODO: make_row tests*)
-
 let general_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
     ~low_price:"Low" ~close_price:" Close" ~volume:"vol1234 "
     "data/test/general.csv"
+
+let spy_csv =
+  CsvReader.read_csv ~date:"Date" ~open_price:"Open" ~high_price:"High"
+    ~low_price:"Low" ~close_price:"Close" ~volume:"Volume" "./data/SPY.csv"
 
 module DateConverterTester = struct
   let test_convert ~date_type out date =
@@ -52,6 +54,16 @@ module CsvReaderTester = struct
   let test_size out csv =
     "size test" >:: fun _ ->
     assert_equal ~printer:string_of_int out (CsvReader.size csv)
+
+  let test_make_row ?(date_type = "YYYY-MM-DD") out row =
+    "make row test" >:: fun _ ->
+    assert_equal ~printer:CsvReader.string_of_row out
+      (CsvReader.make_row ~date_type row)
+
+  let test_make_csv ?(date_type = "YYYY-MM-DD") out data =
+    "make csv test" >:: fun _ ->
+    assert_equal ~printer:CsvReader.string_of_data out
+      (CsvReader.make_csv ~date_type data)
 
   let test_get_row ~n out csv =
     let size = CsvReader.size csv in
@@ -103,6 +115,58 @@ module CsvReaderTester = struct
       test_size 0 (CsvReader.head general_csv 0);
       test_size 3 (CsvReader.head general_csv 3);
       test_size 8 (CsvReader.head general_csv 9);
+    ]
+
+  let make_row_tests =
+    [
+      test_make_row
+        (CsvReader.get_row spy_csv 0)
+        [
+          "2018-10-01";
+          "292.109985";
+          "292.929993";
+          "290.980011";
+          "291.730011";
+          "268.371399";
+          "62078900.";
+        ];
+      test_make_row
+        (CsvReader.get_row spy_csv 5)
+        [
+          "2018-10-04";
+          "291.179993";
+          "291.239990";
+          "287.660004";
+          "289.440002";
+          "266.264771";
+          "111545900.";
+        ];
+    ]
+
+  let make_csv_tests =
+    [
+      test_make_csv (CsvReader.head spy_csv 2)
+        [
+          [
+            "2018-10-01";
+            "292.109985";
+            "292.929993";
+            "290.980011";
+            "291.730011";
+            "268.371399";
+            "62078900";
+          ];
+          [
+            "2018-10-02";
+            "291.559998";
+            "292.359985";
+            "291.140015";
+            "291.559998";
+            "268.214935";
+            "47258200";
+          ];
+        ];
+      test_make_csv (CsvReader.tail spy_csv 2) [];
     ]
 
   let get_row_tests =
@@ -253,6 +317,8 @@ module CsvReaderTester = struct
         row_getter_tests;
         col_getter_tests;
         get_row_tests;
+        make_row_tests;
+        make_csv_tests;
         size_tests;
         head_tests;
         tail_tests;

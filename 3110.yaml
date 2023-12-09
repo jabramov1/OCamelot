@@ -1,0 +1,33 @@
+---
+# Members of your group.
+group:
+  - name: Joseph Abramov
+    netid: ja653
+  - name: Kai Gangi
+    netid: keg93
+  - name: Javohir Abdurazzakov
+    netid: ja688
+
+
+pm:
+  name: Yuki Suwabe
+  netid: ys47
+
+publish: true
+
+
+title: "OCamelot"
+
+git-repo: "https://github.com/jabramov1/OCamelot"
+
+
+demo-video-url: ""
+
+
+desc: >
+  OCamelot is an easy-to-use stock-analysis library that will accept nearly 
+  any CSV data format. Apart from basic data analysis, OCamelot 
+  provides functions to calculate moving averages, execute trading strategies, 
+  and evaluate these strategies with a backtesting module. Many of these 
+  statistics can be viewed in a clean and interactive GUI. 
+
