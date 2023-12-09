@@ -13,12 +13,12 @@ let prompt_for_moving_average () =
      VolumeAdjusted):";
   let ma_type_str = read_line () in
   let ma_type =
-    match ma_type_str with
-    | "Simple" -> Simple
-    | "Exponential" -> Exponential
-    | "Weighted" -> Weighted
-    | "Triangular" -> Triangular
-    | "VolumeAdjusted" -> VolumeAdjusted
+    match ma_type_str |> String.lowercase_ascii with
+    | "simple" -> Simple
+    | "exponential" -> Exponential
+    | "weighted" -> Weighted
+    | "triangular" -> Triangular
+    | "volumeadjusted" -> VolumeAdjusted
     | _ -> failwith "Invalid moving average type"
   in
   print_endline "Enter moving average period:";
@@ -86,21 +86,21 @@ let rec interactive_ma_input m_averages =
     ("Here are indicators: \n"
     ^ string_of_ma_list m_averages
     ^ "Enter command (Add, Remove, Done):");
-  match read_line () with
-  | "Add" ->
+  match read_line () |> String.lowercase_ascii with
+  | "add" ->
       let ma = prompt_for_moving_average () in
       interactive_ma_input (ma :: m_averages)
-  | "Remove" ->
+  | "remove" ->
       print_endline (string_of_ma_list m_averages);
-      print_endline "Enter index of MA to remove:";
+      print_endline "Enter the number of the MA to remove:";
       let index = read_int () in
       let new_m_averages =
         List.mapi (fun i ma -> (i, ma)) m_averages
-        |> List.filter (fun (i, _) -> i <> index)
+        |> List.filter (fun (i, _) -> i <> index - 1)
         |> List.map snd
       in
       interactive_ma_input new_m_averages
-  | "Done" -> m_averages
+  | "done" -> m_averages
   | _ ->
       print_endline "Invalid command";
       interactive_ma_input m_averages

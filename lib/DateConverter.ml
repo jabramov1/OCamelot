@@ -4,7 +4,6 @@ exception InvalidDate of string
     two digits. If it does not, prepend ["0"] to [n]. *)
 let format_day_month (n : string) : string =
   let len = String.length n in
-  print_string n;
   match len with
   | 1 -> "0" ^ n
   | 2 -> n

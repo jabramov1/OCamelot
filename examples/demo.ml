@@ -1,21 +1,20 @@
 open Ocamelot
-open Ocamelot.BackTester
-
-let clean_csv =
-  CsvReader.read_csv ~date:"Date" ~open_price:"open" ~high_price:"high"
-    ~low_price:"low" ~close_price:"close" ~volume:"volume" ~date_type:"MM/DD/YY"
-    "./data/StockData.csv"
 
 let spy_csv =
   CsvReader.read_csv ~date:"Date" ~open_price:"Open" ~high_price:"High"
     ~low_price:"Low" ~close_price:"Close" ~volume:"Volume" "./data/SPY.csv"
+
+let stock_csv =
+  CsvReader.read_csv ~date:"Date" ~open_price:"open" ~high_price:"high"
+    ~low_price:"low" ~close_price:"close" ~volume:"volume" ~date_type:"MM/DD/YY"
+    "./data/StockData.csv"
 
 let messy_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
     ~low_price:"Low" ~close_price:"Close" ~volume:"vol1234 "
     "./data/test/general.csv"
 
-let data_list = [ clean_csv; spy_csv; messy_csv ]
+let data_list = [ spy_csv; stock_csv; messy_csv ]
 
 let demo_csv data =
   let size = CsvReader.size data in
@@ -33,6 +32,8 @@ let demo_csv data =
   let tail_size = 4 in
   print_endline "Last 4 elements:";
   CsvReader.print_data (CsvReader.tail data tail_size)
+
+open Ocamelot.BackTester
 
 let demo_backtest data =
   let strategy = Strategy.create_strategy ~moving_average_window:5 in
