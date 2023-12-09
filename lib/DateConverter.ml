@@ -4,6 +4,7 @@ exception InvalidDate of string
     two digits. If it does not, prepend ["0"] to [n]. *)
 let format_day_month (n : string) : string =
   let len = String.length n in
+  print_string n;
   match len with
   | 1 -> "0" ^ n
   | 2 -> n
@@ -11,9 +12,11 @@ let format_day_month (n : string) : string =
 
 (** [reorder_list lst indices] reorders [lst] based on [indices]. *)
 let reorder_list (lst : 'a list) (indices : int list) : 'a list =
-  let indexed_lst = List.combine indices lst in
-  let sorted = List.sort (fun (i1, _) (i2, _) -> compare i1 i2) indexed_lst in
-  List.map snd sorted
+  [
+    List.nth lst (List.nth indices 0);
+    List.nth lst (List.nth indices 1);
+    List.nth lst (List.nth indices 2);
+  ]
 
 (** [month_to_number m] takes a three-letter representation of a month [m] and
     converts it to its corresponding numerical month. *)
@@ -77,7 +80,9 @@ let parse_date ~date_type date =
       let new_date = new_date |> reconstruct in
       if String.length year = 2 then "20" ^ new_date else new_date
   | "MM/DD/YYYY" | "MM/DD/YY" ->
+      let _ = List.map (fun x -> print_endline x) split_slash in
       let new_date = reorder_list split_slash [ 2; 0; 1 ] in
+      let _ = List.map (fun x -> print_endline x) new_date in
       let year = List.hd new_date in
       let new_date = new_date |> reconstruct in
       if String.length year = 2 then "20" ^ new_date else new_date
