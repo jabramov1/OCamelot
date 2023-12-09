@@ -1,18 +1,12 @@
-(* Type representing the decision to Buy, Sell, or Hold *)
 type decision =
   | Buy
   | Sell
   | Hold
 
-(* Configuration type for the strategy, specifying the moving average window
-   size *)
 type t = { moving_average_window : int }
 
-(* Function to create a strategy with a specified moving average window *)
 let create_strategy ~moving_average_window = { moving_average_window }
 
-(* Function to execute the strategy on a list of rows, producing a list of
-   decisions *)
 let execute (strategy : t) (data : CsvReader.row list) =
   let rec execute_aux rows previous_rows acc_decisions =
     match rows with
@@ -44,8 +38,6 @@ let execute (strategy : t) (data : CsvReader.row list) =
   in
   execute_aux data [] []
 
-(* Type representing a trading action with details such as entry/exit date,
-   prices, and decision *)
 type trade = {
   entry_date : float;
   exit_date : float option;
@@ -54,8 +46,6 @@ type trade = {
   decision : decision;
 }
 
-(* Function to execute trades based on decisions, updating the list of existing
-   trades *)
 let execute_trades (decision : decision) (_row : CsvReader.row)
     (trades : 'a list) =
   match decision with
@@ -70,7 +60,7 @@ let execute_trades (decision : decision) (_row : CsvReader.row)
       :: trades
   | Sell -> (
       match trades with
-      | [] -> trades (* No open position to sell *)
+      | [] -> trades
       | buy_trade :: rest_trades ->
           {
             buy_trade with
@@ -81,4 +71,4 @@ let execute_trades (decision : decision) (_row : CsvReader.row)
             decision;
           }
           :: rest_trades)
-  | Hold -> trades (* No new trades, just hold the existing positions *)
+  | Hold -> trades

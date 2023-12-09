@@ -12,17 +12,19 @@ type t = row list
 let size data = List.length data
 
 let make_row lst =
-  match lst with
-  | date :: open_p :: high_p :: low_p :: close_p :: volume :: _ ->
-      {
-        date = float_of_string date;
-        open_price = Some (float_of_string open_p);
-        high_price = Some (float_of_string high_p);
-        low_price = Some (float_of_string low_p);
-        close_price = Some (float_of_string close_p);
-        volume = Some (float_of_string volume);
-      }
-  | _ -> raise (Invalid_argument "Invalid row format")
+  if List.length lst > 6 then raise (Invalid_argument "Invalid row format")
+  else
+    match lst with
+    | date :: open_p :: high_p :: low_p :: close_p :: volume :: _ ->
+        {
+          date = float_of_string date;
+          open_price = Some (float_of_string open_p);
+          high_price = Some (float_of_string high_p);
+          low_price = Some (float_of_string low_p);
+          close_price = Some (float_of_string close_p);
+          volume = Some (float_of_string volume);
+        }
+    | _ -> raise (Invalid_argument "Invalid row format")
 
 let make_csv lst = List.map make_row lst
 

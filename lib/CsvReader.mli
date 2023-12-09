@@ -20,34 +20,38 @@ val read_csv :
     calculations. An entry x is stored as [Some x], while empty entries and
     entries that don't conform to their required type are stored as [None].
 
-    @raise [Sys_error] if the given file can't be found.
+    @see 'DateConverter.mli' for more information on valid date formats.
 
-    @param [date]
+    @raise Sys_error if the given file can't be found.
+
+    @param date
       The title of the column (within the header) that stores the dates.
       Surrounding whitespace is ignored. Empty date or invalid dates are not
       added to the CSV data representation.
 
-    @param [open_price]
+    @param open_price
       The title of the column (within the header) that stores the open prices.
       Surrounding whitespace is ignored.
 
-    @param [high_price]
+    @param high_price
       The title of the column (within the header) that stores the high prices.
       Surrounding whitespace is ignored.
 
-    @param [low_price]
+    @param low_price
       The title of the column (within the header) that stores the low prices.
       Surrounding whitespace is ignored.
 
-    @param [close_price]
+    @param close_price
       The title of the column (within the header) that stores the closing.
       Surrounding whitespace is ignored. prices.
 
-    @param [volume]
+    @param volume
       The title of the column (within the header) that stores the volumes.
       Surrounding whitespace is ignored.
 
-    @param [separator]
+    @param date_type The format of the dates in the dates column.
+
+    @param separator
       The character of the separator between entries in the CSV file. The
       default is [',']. *)
 
@@ -56,16 +60,25 @@ val size : t -> int
     [d]. *)
 
 val make_row : string list -> row
-(** INSERT DOCS *)
+(** [make_row r] takes converts the list of strings [r] to the [row]
+    representation type, provided that the elements are in the order of date,
+    open price, high price, low price, closing price, and volume.
+
+    @raise Invalid_argument
+      if the length of [row] is not equal to 6 (the number of required fields to
+      make a row). *)
 
 val make_csv : string list list -> t
-(** INSERT DOCS *)
+(** [make_csv d] converts the list of list of strings [d] to the CSV data
+    representation type [t], provided that the elements in each sublist are in
+    the order of date, open price, high price, low price, closing price, and
+    volume. *)
 
 val get_row : t -> int -> row
 (** [get_row d n] returns the row in [d] located at index [n]. Indices begin at
     0.
 
-    @raise [Not_found] if index is out of bounds. *)
+    @raise Not_found if index is out of bounds. *)
 
 val get_date : row -> float
 (** [get_date r] returns the date for the given row [r]. *)
@@ -124,8 +137,7 @@ val string_of_row : row -> string
     with "N/A".
 
     Example output: "Date: 2018-10-01, Open Price: 292.109985, High Price:
-    292.929993, Low \ Price: 290.980011, Close Price: 291.730011, Adj Price:
-    N/A, Volume: \ 62078900" *)
+    292.929993, Low Price: 290.980011, Close Price: N/A, Volume: 62078900" *)
 
 val print_row : row -> unit
 (** [print_row r] prints a given row from the CSV data representation type in a

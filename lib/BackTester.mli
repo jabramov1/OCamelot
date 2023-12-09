@@ -1,9 +1,9 @@
 open Strategy
 
 type backtest_result = {
-  trades : trade list; (* List of trades executed during the backtest *)
-  annualized_returns : float; (* Annualized returns based on executed trades *)
-  sharpe_ratio : float; (* Sharpe ratio based on executed trades *)
+  trades : trade list;
+  annualized_returns : float;
+  sharpe_ratio : float;
 }
 (** Type representing the result of a backtest *)
 

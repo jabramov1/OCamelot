@@ -1,3 +1,5 @@
+(** [moving_avg_type] represents the type of moving average that a user could
+    graph. *)
 type moving_avg_type =
   | Simple
   | Exponential
