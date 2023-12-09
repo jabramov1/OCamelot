@@ -4,11 +4,9 @@ open Ocamelot.MovingAverage
 open Ocamelot.DateConverter
 open OUnit2
 
-(** TODO: add scalability testing / diff dates + file no header? *)
-
 let general_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
-    ~low_price:"Low" ~close_price:" Close" ~adj_price:"adj" ~volume:"vol1234 "
+    ~low_price:"Low" ~close_price:" Close" ~volume:"vol1234 "
     "data/test/general.csv"
 
 module DateConverterTester = struct
@@ -30,13 +28,16 @@ module DateConverterTester = struct
       test_convert ~date_type:"YYYY-MM-DD" "2018-10-01" "2018-10-01";
       test_convert ~date_type:"YYYY/MM/DD" "2020-12-12" "2020/12/12";
       test_convert ~date_type:"MM-DD-YYYY" "2003-09-10" "09-10-2003";
-      test_convert ~date_type:"MM/DD/YYYY" "1923-04-15" "04/ 15/    1923";
-      test_convert ~date_type:"DD-MM-YYYY" "1972-04-02" "2 - 4 - 1972 ";
+      test_convert ~date_type:"MM/DD/YYYY" "1923-04-15" "04/15/1923";
+      test_convert ~date_type:"DD-MM-YYYY" "1972-04-02" "2-4-1972 ";
       test_convert ~date_type:"DD/MM/YYYY" "2024-09-12" "12/09/2024";
       test_convert ~date_type:"YYYY-DD-MM" "2023-01-03" "2023-03-1";
       test_convert ~date_type:"YYYY/DD/MM" "1923-12-12" "1923/12/12";
       test_convert ~date_type:"MMM DD, YYYY" "2004-12-04" "DEC 4, 2004";
-      test_convert ~date_type:"MMM DD, YYYY" "2004-01-04" "jaN 04 , 2004 ";
+      test_convert ~date_type:"MMM DD, YYYY" "2004-01-04" "jaN 04, 2004";
+      test_convert_raises ~date_type:"MM/DD/YYYY"
+        ~err_str:"Invalid date. Component is not of proper length."
+        "04/ 15/    1923";
       test_convert_raises ~date_type:"YYYY-MM-DD"
         ~err_str:"Invalid date: 20180-10-01T00:00:00Z" "20180-10-01";
       test_convert_raises ~date_type:"MMM DD, YYYY"
@@ -109,13 +110,11 @@ module CsvReaderTester = struct
       test_get_row ~n:(-1) "" general_csv;
       test_get_row ~n:0
         "Date: 2018-10-01, Open Price: 292.109985, High Price: 292.929993, Low \
-         Price: 290.980011, Close Price: 291.730011, Adj Price: N/A, Volume: \
-         62078900."
+         Price: 290.980011, Close Price: 291.730011, Volume: 62078900."
         general_csv;
       test_get_row ~n:7
         "Date: 2018-10-11, Open Price: N/A, High Price: 278.899994, Low Price: \
-         270.359985, Close Price: 272.170013, Adj Price: 250.377533, Volume: \
-         274840500."
+         270.359985, Close Price: 272.170013, Volume: 274840500."
         general_csv;
       test_get_row ~n:100 "" general_csv;
     ]
@@ -222,10 +221,6 @@ module CsvReaderTester = struct
           ~p:(string_of_opt string_of_float)
           ~f:CsvReader.get_closing_prices ~fname:"closing prices col getter"
           ~fst:(Some 291.730011) ~lst:(Some 272.170013) general_csv;
-        test_col_getter
-          ~p:(string_of_opt string_of_float)
-          ~f:CsvReader.get_adj_prices ~fname:"adj prices col getter" ~fst:None
-          ~lst:(Some 250.377533) general_csv;
         test_col_getter
           ~p:(string_of_opt string_of_float)
           ~f:CsvReader.get_volumes ~fname:"volumes col getter"

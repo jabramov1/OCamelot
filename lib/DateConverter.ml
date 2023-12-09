@@ -40,14 +40,14 @@ module DateConverter : DateConverterType = struct
     | None -> raise (InvalidDate "Invalid date input.")
 
   let split_date delim date =
-    String.split_on_char delim date |> List.map String.trim
+    let date = String.split_on_char ' ' date |> List.hd in
+    String.trim date |> String.split_on_char delim
 
-  let reconstruct year month day = year ^ "-" ^ month ^ "-" ^ day
+  let reconstruct year month day = year ^ "-" ^ month ^ "-" ^ day |> String.trim
 
   let parse_date ~date_type date =
     let split_dash = split_date '-' date in
     let split_slash = split_date '/' date in
-    let split_comma = split_date ',' date in
     match date_type with
     | "YYYY-MM-DD" -> date
     | "YYYY/MM/DD" ->
@@ -79,9 +79,10 @@ module DateConverter : DateConverterType = struct
           (List.nth split_slash 2 |> format_day_month)
           (List.nth split_slash 1 |> format_day_month)
     | "MMM DD, YYYY" ->
-        let split = split_date ' ' (List.hd split_comma) in
-        let month = List.hd split in
-        let day = List.nth split 1 |> format_day_month in
+        let split_comma = String.split_on_char ',' date in
+        let split_space = String.split_on_char ' ' (List.hd split_comma) in
+        let month = List.hd split_space in
+        let day = List.nth split_space 1 |> format_day_month in
         let year = List.nth split_comma 1 in
         reconstruct year (month_to_number month) day
     | _ -> raise (InvalidDate "Unsupported date format.")
