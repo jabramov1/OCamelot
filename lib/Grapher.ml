@@ -20,6 +20,17 @@ module type GrapherType = sig
       @param data is the CSV data to be plotted. *)
 end
 
+let ma_label (ma_type, period) =
+  let ma_type_label =
+    match ma_type with
+    | Simple -> "SMA"
+    | Exponential -> "EMA"
+    | Weighted -> "WMA"
+    | Triangular -> "TMA"
+    | VolumeAdjusted -> "VAMA"
+  in
+  Printf.sprintf "%d-day %s" period ma_type_label
+
 module Grapher : GrapherType = struct
   let convert_data data =
     let convert_row row =
@@ -55,6 +66,8 @@ module Grapher : GrapherType = struct
       | h1 :: t1, h2 :: t2 -> (h1, h2) :: tuple_lists t1 t2
       | _ -> []
 
+  let colors = [ `Magenta; `Green; `Red; `Cyan; `Yellow ]
+
   let filter_float_list (data : float option list) : float list =
     List.filter_map (fun x -> x) data
 
@@ -62,8 +75,6 @@ module Grapher : GrapherType = struct
       =
     let plot_data = convert_data data in
     let dates = List.map fst plot_data in
-
-    (* Calculate all moving averages provided in the m_averages list *)
     let moving_avg_data_lists =
       List.map
         (fun (ma_type, ma_period) ->
@@ -74,15 +85,14 @@ module Grapher : GrapherType = struct
     let data_mas =
       List.map (fun ma_data -> tuple_lists dates ma_data) moving_avg_data_lists
     in
-
-    (* ... plotting logic ... *)
+    let ma_labels = List.map ma_label m_averages in
     let gp = Gp.create () in
     let candle_data = Gp.Series.candles_date_ohlc ~color:`Blue plot_data in
     let ma_series =
       List.mapi
         (fun i ma_data ->
-          Gp.Series.lines_datey
-            ~color:(List.nth [ `Magenta; `Green; `Red ] i)
+          Gp.Series.lines_datey ~title:(List.nth ma_labels i)
+            ~color:(List.nth colors (i mod List.length colors))
             ma_data)
         data_mas
     in
