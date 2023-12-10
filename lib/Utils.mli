@@ -1,3 +1,5 @@
+(** Miscellaneous functions that mainly help with type conversions. *)
+
 val string_of_opt : ('a -> string) -> 'a option -> string
 (** [string_of_opt f s] converts a value of type ['a option] into its string
     representation. If the input value [s] is [Some x], [string_of_opt] applies

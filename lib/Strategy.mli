@@ -1,8 +1,9 @@
-(** Type representing the decision to Buy, Sell, or Hold *)
+(** Trading strategies to perform on CSV data representation. *)
+
 type decision =
   | Buy
   | Sell
-  | Hold
+  | Hold  (** Type representing the decision to Buy, Sell, or Hold *)
 
 type t = { moving_average_window : int }
 (** Configuration type for the strategy, specifying the moving average window

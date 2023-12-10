@@ -1,11 +1,13 @@
-(** [moving_avg_type] represents the type of moving average that a user could
-    graph. *)
+(** Graphs the candlestick charts and moving averages. *)
+
 type moving_avg_type =
   | Simple
   | Exponential
   | Weighted
   | Triangular
   | VolumeAdjusted
+      (** [moving_avg_type] represents the type of moving average that a user
+          could graph. *)
 
 val graph : ?m_averages:(moving_avg_type * int) list -> CsvReader.t -> unit
 (** [graph ?m_averages data] plots the given data along with specified moving

@@ -1,3 +1,5 @@
+(** A Backtester to backtest strategies from the Strategy module. *)
+
 open Strategy
 
 type backtest_result = {

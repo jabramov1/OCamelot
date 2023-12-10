@@ -1,3 +1,6 @@
+(** Reads CSV files and stores them into a data representation for stock
+    analysis. *)
+
 type row
 (** Representation type for each row in the CSV file. *)
 

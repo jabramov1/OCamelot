@@ -1,3 +1,5 @@
+(** Calculates moving averages from the CSV data representation. *)
+
 val simple_moving_avg : CsvReader.t -> int -> float option list
 (** [simple_moving_avg data n] calculates the simple moving average (SMA) for
     the closing prices in a CSV data representation [data] over a window size

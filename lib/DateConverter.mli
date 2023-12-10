@@ -1,3 +1,5 @@
+(** Manages conversions from strings to date floats and vice-versa. *)
+
 exception InvalidDate of string
 
 val string_to_date : date_type:string -> string -> float
