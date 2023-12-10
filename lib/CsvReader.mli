@@ -61,7 +61,7 @@ val size : t -> int
 (** [size d] returns the number of rows stored in the CSV data representation
     [d]. *)
 
-val make_row : date_type:string -> string list -> row
+val make_row : ?date_type:string -> string list -> row
 (** [make_row r] takes converts the list of strings [r] to the [row]
     representation type, provided that the elements are in the order of date,
     open price, high price, low price, closing price, and volume. Dates are
@@ -71,7 +71,7 @@ val make_row : date_type:string -> string list -> row
       if the length of [row] is not equal to 6 (the number of required fields to
       make a row). *)
 
-val make_csv : date_type:string -> string list list -> t
+val make_csv : ?date_type:string -> string list list -> t
 (** [make_csv d] converts the list of list of strings [d] to the CSV data
     representation type [t], provided that the elements in each sublist are in
     the order of date, open price, high price, low price, closing price, and

@@ -11,11 +11,11 @@ type t = row list
 
 let size data = List.length data
 
-let make_row ~date_type lst =
+let make_row ?(date_type = "YYYY-MM-DD") lst =
   if List.length lst > 6 then raise (Invalid_argument "Invalid row format")
   else
     match lst with
-    | date :: open_p :: high_p :: low_p :: close_p :: volume :: _ ->
+    | [ date; open_p; high_p; low_p; close_p; volume ] ->
         {
           date = DateConverter.string_to_date ~date_type date;
           open_price = Some (float_of_string open_p);
@@ -26,7 +26,8 @@ let make_row ~date_type lst =
         }
     | _ -> raise (Invalid_argument "Invalid row format")
 
-let make_csv ~date_type lst = List.map (make_row ~date_type) lst
+let make_csv ?(date_type = "YYYY-MM-DD") lst =
+  List.map (make_row ~date_type) lst
 
 let get_row (data : t) i =
   if i >= 0 && i < List.length data then List.nth data i else raise Not_found
