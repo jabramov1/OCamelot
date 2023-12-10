@@ -23,7 +23,8 @@ let calculate_annualized_returns (trades : trade list) : float =
     ((total_returns +. 1.0) ** (1.0 /. float_of_int num_trades)) -. 1.0
   else 0.0
 
-(* Custom standard deviation calculation *)
+(** [std_deviation lst] calculates the standard deviation of a list of floats.
+    Requires: the list has at least 2 elements. *)
 let std_deviation (lst : float list) : float =
   let n = List.length lst in
   if n <= 1 then
@@ -35,7 +36,8 @@ let std_deviation (lst : float list) : float =
     in
     sqrt (sum_squares /. float_of_int (n - 1))
 
-(* Function to calculate Sharpe ratio based on executed trades *)
+(* [calculate_sharpe_ratio lst] calculates the sharpe ratio for a list of
+   trades. *)
 let calculate_sharpe_ratio (trades : trade list) : float =
   let annualized_returns = calculate_annualized_returns trades in
   let risk_free_rate = 0.02 in
@@ -53,8 +55,7 @@ let calculate_sharpe_ratio (trades : trade list) : float =
   in
   sharpe_ratio
 
-(* Function to perform a backtest using a strategy on historical market data *)
-let backtest (strategy : t) (data : CsvReader.row list) : backtest_result =
+let backtest (strategy : t) (data : CsvReader.t) : backtest_result =
   let decisions = execute strategy data in
 
   let rec backtest_aux rows remaining_decisions prev_trades =
