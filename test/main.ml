@@ -84,7 +84,37 @@ open OUnit2
       messy one, our manual tests for this module support the notion of our
       system being correct.
 
-    Strategy/BackTester: *)
+    Strategy/BackTester:
+    - The demo has 3 sources of csv code. Only 1 of them is small enough and
+      with the right properties of no missing data to test its Backtesting
+      functionality correctly. That was StockData.csv
+    - We had to manually simulate it and write each decesion (Buy, Sell, Hold)
+      that happened each day. We wrote all the trades based on the model we made
+      in Strategy.ml (which is to buy when the current price is greater than the
+      moving average of the n window and to sell if it is less than. If it is
+      the same, then it will hold onto that trade)
+    - After writing all those trades out, I would manually add and subtract the
+      results from the trade to the annualized return pool. Each trade is either
+      a gain or loss. The calculation is just the exit value minus the entry
+      value.
+    - After having the total amount gained or lossed by summing up the results
+      of all the trades, I used the equation for annualized return and just
+      added my result from the sum and the number of trades into the equaiton to
+      get the annualized return.
+    - I used this annualized return value as an input for the equation to the
+      Sharpe ratio to get an output for that too. I used a risk factor of 0.02
+      as it was recommended to use from online sources.
+    - I compared these values to the ones I got from the printed output in
+      terminal when we ran the demo and they truned out to be the same.
+    - The result is that the annualized return is a negative value, meaning that
+      the there were more losses than gains. The Sharpe ratio was also negative,
+      meaning that the model is both really risky and that there is no gain for
+      the risk taken. In summary, the really basic strategy in Strategy.ml is an
+      example of a poor one.
+    - We cannot test Strategy.ml as it requires BackTester.ml to have any
+      functionality but the manual test in BackTester.ml showed that the model
+      was working correctly as the trades we simulated ended up giving us the
+      same value we calculated.*)
 
 let general_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
