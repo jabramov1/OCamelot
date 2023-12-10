@@ -16,6 +16,7 @@ let csv_data =
 
 let demo data =
   (* Print size of CSV data. *)
+  print_endline "Size:";
   let size = CsvReader.size data in
   print_endline (string_of_int size);
 
