@@ -4,7 +4,7 @@ open OUnit2
 
 (** TEST PLAN:
 
-    TESTING OVERVIEW:
+    -- TESTING OVERVIEW --
     - OUnit was used to automatically test the functions in the following
       modules: DateConverter, CsvReader, and MovingAverage. For the majority of
       these tests, a black-box testing approach was used.
@@ -12,7 +12,7 @@ open OUnit2
       CsvReader, MovingAverage, Grapher, Strategy, and BackTester. Some evidence
       of these tests can be seen in 'demo.ml'.
 
-    OUNIT TESTING:
+    -- OUNIT TESTING --
 
     DateConverter
     - Black box testing was used for different date formats.
@@ -49,7 +49,7 @@ open OUnit2
     - All moving average calculations were verified by hand, with proof of these
       on Google Docs.
 
-    MANUAL TESTING
+    -- MANUAL TESTING --
 
     DateConverter
     - In our demo, 3 different CSV file formats were utilized. Different date
