@@ -2,6 +2,90 @@ open Ocamelot
 open Ocamelot.Utils
 open OUnit2
 
+(** TEST PLAN:
+
+    TESTING OVERVIEW:
+    - OUnit was used to automatically test the functions in the following
+      modules: DateConverter, CsvReader, and MovingAverage. For the majority of
+      these tests, a black-box testing approach was used.
+    - Manual testing was used to cover the following modules: DateConverter,
+      CsvReader, MovingAverage, Grapher, Strategy, and BackTester. Some evidence
+      of these tests can be seen in 'demo.ml'.
+
+    OUNIT TESTING:
+
+    DateConverter
+    - Black box testing was used for different date formats.
+    - Created tests for every acceptable date format for our system
+    - Tested if unacceptable date formats raised the proper error
+    - Since nearly all formats of dates were tested, our tests for this module
+      support the notion that our system to be correct.
+
+    CsvReader
+    - For our source of data, we used a messy csv file, containing empty values,
+      a header that was out of order with unorthodox labels, and values with
+      whitespace. This ensured that our CSV data analysis functions worked to
+      any generalized piece of data. This also ensured that the functions in
+      other modules which used this CSV data representation as input would also
+      be generalizable.
+    - The only exception to this was with our tests for [make_row] and
+      [make_csv]. These functions construct a CSV row/data representation of
+      type [CsvReader.row] and [CsvReader.t], respectively, from a given list.
+      We compared the output to those in the clean SPY.csv, but ensured that any
+      invalid inputs would raise their proper errors.
+    - A black-box testing approach was used, with edge cases tested as well
+      (most commonly, negative input values and values larger than length of
+      lists).
+
+    MovingAverage
+    - For our source of data, we constructed a CSV date representation from the
+      same messy csv file used in the CsvReader tests.
+    - We made sure all edge cases were tested (e.g. empty lists, small window
+      sizes, very large window sizes) were all tested. This ensured our system
+      would function properly for nearly any given list of prices.
+    - We also made sure to include examples that would result in values of
+      [None] within the result to ensure that the system would still function
+      properly afterwards.
+    - All moving average calculations were verified by hand, with proof of these
+      on Google Docs.
+
+    MANUAL TESTING
+
+    DateConverter
+    - In our demo, 3 different CSV file formats were utilized. Different date
+      formats were present. The parsing of these dates still worked properly
+      with our CSV reader.
+
+    CsvReader
+    - In our demo, 3 different CSV file formats were read into a data
+      representation, including a very messy CSV. By calculating the size,
+      indexing rows, and retrieving the head and tail of the data (while
+      printing these out), we were further able to verify the correctness of our
+      CSV reader.
+
+    MovingAverage
+    - In our demo, we were able to use the grapher on 3 different CSV files to
+      graph a variety of moving averages. These moving average lines followed
+      the candlestick chart as we were expecting.
+    - We verified that increasing the moving average period would cause the
+      graph for it to start later and be shorter in duration.
+
+    Grapher
+    - The user input dialog allows users to add or remove types of moving
+      averages with varying period lengths. We tested the dialog to make sure
+      the resulting graph worked properly for all types of averages and a wide
+      variety of period lengths worked (including negative, 0, and large
+      numbers).
+    - We tested this on 2 different CSV files with different formats, as well as
+      a messy CSV file with many empty values.
+    - We were able to verify that the correct values were being graphed by
+      analyzing the y-axis values of many candlesticks.
+    - By having our grapher work on a variety of CSV formats, including a very
+      messy one, our manual tests for this module support the notion of our
+      system being correct.
+
+    Strategy/BackTester: *)
+
 let general_csv =
   CsvReader.read_csv ~date:" the date " ~open_price:"Open" ~high_price:"hi"
     ~low_price:"Low" ~close_price:" Close" ~volume:"vol1234 "
