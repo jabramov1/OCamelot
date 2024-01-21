@@ -7,7 +7,7 @@ Data values are represented as optionals. Empty data values will yield ```None``
 
 ## Documentation
 To view the full documentation for OCamelot using odoc, run the following commands in the terminal
-```bash
+```
 opam install odoc
 make doc
 open _build/default/_doc/_html/index.html
@@ -18,7 +18,7 @@ open _build/default/_doc/_html/index.html
 
 Clone this repo, and install the dependencies with the following commands.
 
-```bash
+```
 opam update
 opam install base
 opam install csv
@@ -40,13 +40,15 @@ where ```./data/SPY.csv``` is the user's input CSV data and ```MM/DD/YYYY`` is t
 ## Demo
 To run the demo from the terminal, use the following command:
 
-```bash
+```
 dune exec examples/demo.exe
 ```
 
-The demo prints features regarding the input CSV data (e.g. size, head), performs a trading strategy and backtests it, and prompts the user to input different moving averages which are then displayed on a candlestick graph GUI. 
+The demo prints features regarding the input CSV data (e.g. size, head), performs a trading strategy and backtests it, and prompts the user to input different moving averages which are then displayed on a candlestick graph GUI (as shown below).
 
-The current available moving averages are simple moving average, exponential moving average, triangular moving average, weighted moving average, and volume-adjusted moving average.
+[csv-graph.png](https://postimg.cc/gx5wfmSD)
+
+The current available moving averages are simple moving average, exponential moving average, triangular moving average, weighted moving average, and volume-adjusted moving average. 
 
 ## Authors
 
