@@ -44,8 +44,9 @@ To run the demo from the terminal, use the following command:
 dune exec examples/demo.exe
 ```
 
-The demo prints features regarding the input CSV data (e.g. size, head), performs a trading strategy and backtests it, and prompts the user to input different moving averages which are then displayed on a candlestick graph GUI (as shown below).
+The demo prints features regarding the input CSV data (e.g. size, head), performs a trading strategy and backtests it, and prompts the user to input different moving averages which are then displayed on a candlestick graph GUI.
 
+Sample graph:
 [csv-graph.png](https://postimg.cc/gx5wfmSD)
 
 The current available moving averages are simple moving average, exponential moving average, triangular moving average, weighted moving average, and volume-adjusted moving average. 
